@@ -1038,6 +1038,12 @@
 
             .time-wheel-item.selected {
                 font-size: 19px;
+                font-weight: bold;
+                color: #333;
+            }
+
+            .time-wheel-scroll {
+                padding: 72px 0;
             }
         }
     </style>
@@ -2189,13 +2195,13 @@
                 return;
             }
             
-            const itemHeight = 40; // Fixed height for all items
+            const itemHeight = window.innerWidth <= 768 ? 35 : 40; // Responsive height
             
             // Simple calculation: move items up by (index * itemHeight)
             // The padding-top of 80px centers the first item
             const offset = -(index * itemHeight);
             
-            console.log(`${type}: index=${index}, offset=${offset}px`);
+            console.log(`${type}: index=${index}, offset=${offset}px, itemHeight=${itemHeight}`);
             
             scrollElement.style.transform = `translateY(${offset}px)`;
             updateSelectedItem(`${type}-scroll`, index);
@@ -2216,7 +2222,11 @@
         function addWheelScrollListener(wheelId, scrollId, itemCount, onScroll) {
             const wheel = document.getElementById(wheelId);
             const scroll = document.getElementById(scrollId);
-            const itemHeight = 40; // Fixed height
+            
+            // Get item height based on screen size
+            function getItemHeight() {
+                return window.innerWidth <= 768 ? 35 : 40;
+            }
             
             let startY = 0;
             let startTransform = 0;
@@ -2265,7 +2275,16 @@
                 // Calculate new position
                 const totalDelta = y - startY;
                 const newTransform = startTransform + totalDelta;
+                
+                // Disable transition during drag
+                scroll.style.transition = 'none';
                 scroll.style.transform = `translateY(${newTransform}px)`;
+                
+                // Update selected item during drag for live feedback
+                const itemHeight = getItemHeight();
+                const currentIndex = Math.round(-newTransform / itemHeight);
+                const clampedIndex = Math.max(0, Math.min(itemCount - 1, currentIndex));
+                updateSelectedItem(scrollId, clampedIndex);
             }
             
             function endDrag() {
@@ -2277,7 +2296,11 @@
                 document.removeEventListener('mouseup', endDrag);
                 document.removeEventListener('touchend', endDrag);
                 
+                // Re-enable transition for snap animation
+                scroll.style.transition = 'transform 0.3s ease-out';
+                
                 // Calculate final position with momentum
+                const itemHeight = getItemHeight();
                 const currentTransform = startTransform + (lastY - startY);
                 const momentumDelta = velocity * 100;
                 const finalTransform = currentTransform + momentumDelta;
