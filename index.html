@@ -1892,6 +1892,11 @@
                 eventDiv.addEventListener('drop', handleDrop);
                 eventDiv.addEventListener('dragend', handleDragEnd);
                 
+                // Add touch handlers for mobile
+                eventDiv.addEventListener('touchstart', handleTouchStart);
+                eventDiv.addEventListener('touchmove', handleTouchMove);
+                eventDiv.addEventListener('touchend', handleTouchEnd);
+                
                 container.appendChild(eventDiv);
             }
             
@@ -1988,6 +1993,94 @@
             }, { offset: Number.NEGATIVE_INFINITY }).element;
         }
 
+        // Touch handlers for mobile drag and drop
+        let touchDragElement = null;
+        let touchClone = null;
+        let touchStartY = 0;
+
+        function handleTouchStart(e) {
+            touchDragElement = e.target.closest('.event-item');
+            if (!touchDragElement) return;
+            
+            touchStartY = e.touches[0].clientY;
+            
+            // Add dragging class after a brief delay to confirm it's a drag, not a tap
+            setTimeout(() => {
+                if (touchDragElement) {
+                    touchDragElement.classList.add('dragging');
+                    
+                    // Create a visual clone for dragging
+                    touchClone = touchDragElement.cloneNode(true);
+                    touchClone.style.position = 'fixed';
+                    touchClone.style.zIndex = '10000';
+                    touchClone.style.opacity = '0.8';
+                    touchClone.style.pointerEvents = 'none';
+                    touchClone.style.width = touchDragElement.offsetWidth + 'px';
+                    document.body.appendChild(touchClone);
+                    
+                    updateTouchClonePosition(e.touches[0]);
+                }
+            }, 100);
+        }
+
+        function handleTouchMove(e) {
+            if (!touchDragElement) return;
+            
+            e.preventDefault(); // Prevent scrolling while dragging
+            
+            const touch = e.touches[0];
+            
+            // Update clone position
+            if (touchClone) {
+                updateTouchClonePosition(touch);
+            }
+            
+            // Find what element we're over
+            const container = touchDragElement.closest('.events-list');
+            if (!container) return;
+            
+            const afterElement = getDragAfterElement(container, touch.clientY);
+            
+            if (afterElement == null) {
+                container.appendChild(touchDragElement);
+            } else {
+                container.insertBefore(touchDragElement, afterElement);
+            }
+        }
+
+        function handleTouchEnd(e) {
+            if (!touchDragElement) return;
+            
+            touchDragElement.classList.remove('dragging');
+            
+            // Remove clone
+            if (touchClone) {
+                touchClone.remove();
+                touchClone = null;
+            }
+            
+            // Update order in Firebase
+            const dayIndex = touchDragElement.dataset.dayIndex;
+            const container = document.getElementById(`events-day-${dayIndex}`);
+            const events = Array.from(container.querySelectorAll('.event-item'));
+            
+            events.forEach((event, index) => {
+                const eventId = event.dataset.eventId;
+                update(ref(database, `trips/${currentTripId}/days/day${dayIndex}/events/${eventId}`), {
+                    order: index
+                });
+            });
+            
+            touchDragElement = null;
+        }
+
+        function updateTouchClonePosition(touch) {
+            if (touchClone) {
+                touchClone.style.left = touch.clientX - (touchClone.offsetWidth / 2) + 'px';
+                touchClone.style.top = touch.clientY - 30 + 'px';
+            }
+        }
+
         // Packing list
         function addPackingItem() {
             const input = document.getElementById('packing-item-input');
@@ -2055,7 +2148,10 @@
             document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
             
-            // Save to Firebase
+            // Save to localStorage for global persistence
+            localStorage.setItem('tripPlannerTheme', theme);
+            
+            // Save to Firebase for current trip
             if (currentTripId) {
                 set(ref(database, `trips/${currentTripId}/settings/theme`), theme);
             }
@@ -2104,9 +2200,11 @@
         }
 
         function initializeTimeWheels() {
-            // Hours (1-12)
+            // Hours (1-12) with duplicates for infinite scroll
             const hourScroll = document.getElementById('hour-scroll');
             hourScroll.innerHTML = '';
+            
+            // Add duplicates at the end for smooth wrapping
             for (let i = 1; i <= 12; i++) {
                 const item = document.createElement('div');
                 item.className = 'time-wheel-item';
@@ -2114,10 +2212,28 @@
                 item.onclick = () => selectHour(i);
                 hourScroll.appendChild(item);
             }
+            // Duplicate items at end
+            for (let i = 1; i <= 12; i++) {
+                const item = document.createElement('div');
+                item.className = 'time-wheel-item';
+                item.textContent = i;
+                item.onclick = () => selectHour(i);
+                hourScroll.appendChild(item);
+            }
+            // Duplicate items at beginning
+            for (let i = 12; i >= 1; i--) {
+                const item = document.createElement('div');
+                item.className = 'time-wheel-item';
+                item.textContent = i;
+                item.onclick = () => selectHour(i);
+                hourScroll.insertBefore(item, hourScroll.firstChild);
+            }
             
-            // Minutes (00-59)
+            // Minutes (00-59) with duplicates
             const minuteScroll = document.getElementById('minute-scroll');
             minuteScroll.innerHTML = '';
+            
+            // Add duplicates at the end
             for (let i = 0; i < 60; i++) {
                 const item = document.createElement('div');
                 item.className = 'time-wheel-item';
@@ -2125,10 +2241,27 @@
                 item.onclick = () => selectMinute(i);
                 minuteScroll.appendChild(item);
             }
+            // Duplicate at end
+            for (let i = 0; i < 60; i++) {
+                const item = document.createElement('div');
+                item.className = 'time-wheel-item';
+                item.textContent = i.toString().padStart(2, '0');
+                item.onclick = () => selectMinute(i);
+                minuteScroll.appendChild(item);
+            }
+            // Duplicate at beginning
+            for (let i = 59; i >= 0; i--) {
+                const item = document.createElement('div');
+                item.className = 'time-wheel-item';
+                item.textContent = i.toString().padStart(2, '0');
+                item.onclick = () => selectMinute(i);
+                minuteScroll.insertBefore(item, minuteScroll.firstChild);
+            }
             
-            // AM/PM
+            // AM/PM with duplicates
             const ampmScroll = document.getElementById('ampm-scroll');
             ampmScroll.innerHTML = '';
+            
             ['AM', 'PM'].forEach((period, index) => {
                 const item = document.createElement('div');
                 item.className = 'time-wheel-item';
@@ -2136,55 +2269,72 @@
                 item.onclick = () => selectAMPM(period);
                 ampmScroll.appendChild(item);
             });
+            // Duplicate at end
+            ['AM', 'PM'].forEach((period, index) => {
+                const item = document.createElement('div');
+                item.className = 'time-wheel-item';
+                item.textContent = period;
+                item.onclick = () => selectAMPM(period);
+                ampmScroll.appendChild(item);
+            });
+            // Duplicate at beginning
+            ['PM', 'AM'].forEach((period, index) => {
+                const item = document.createElement('div');
+                item.className = 'time-wheel-item';
+                item.textContent = period;
+                item.onclick = () => selectAMPM(period);
+                ampmScroll.insertBefore(item, ampmScroll.firstChild);
+            });
             
             console.log('AM/PM items created:', ampmScroll.children.length);
             
             // Set initial positions with a small delay to ensure DOM is ready
             setTimeout(() => {
-                const hourIndex = selectedHour - 1;
-                const minuteIndex = selectedMinute;
-                const ampmIndex = selectedAMPM === 'AM' ? 0 : 1;
+                const hourIndex = selectedHour - 1 + 12; // Offset by duplicate count
+                const minuteIndex = selectedMinute + 60; // Offset by duplicate count
+                const ampmIndex = (selectedAMPM === 'AM' ? 0 : 1) + 2; // Offset by duplicate count
                 
                 console.log('Initial positions - Hour:', hourIndex, 'Minute:', minuteIndex, 'AMPM:', ampmIndex);
                 
-                updateWheelPosition('hour', hourIndex);
-                updateWheelPosition('minute', minuteIndex);
-                updateWheelPosition('ampm', ampmIndex);
+                updateWheelPosition('hour', hourIndex, true);
+                updateWheelPosition('minute', minuteIndex, true);
+                updateWheelPosition('ampm', ampmIndex, true);
                 
-                // Add scroll listeners
-                addWheelScrollListener('hour-wheel', 'hour-scroll', 12, (index) => {
-                    selectedHour = index + 1;
-                    updateSelectedItem('hour-scroll', index);
+                // Add scroll listeners with infinite scroll
+                addInfiniteWheelListener('hour-wheel', 'hour-scroll', 12, (index) => {
+                    selectedHour = ((index % 12) || 12);
                 });
                 
-                addWheelScrollListener('minute-wheel', 'minute-scroll', 60, (index) => {
-                    selectedMinute = index;
-                    updateSelectedItem('minute-scroll', index);
+                addInfiniteWheelListener('minute-wheel', 'minute-scroll', 60, (index) => {
+                    selectedMinute = index % 60;
                 });
                 
-                addWheelScrollListener('ampm-wheel', 'ampm-scroll', 2, (index) => {
-                    selectedAMPM = index === 0 ? 'AM' : 'PM';
-                    updateSelectedItem('ampm-scroll', index);
+                addInfiniteWheelListener('ampm-wheel', 'ampm-scroll', 2, (index) => {
+                    selectedAMPM = (index % 2) === 0 ? 'AM' : 'PM';
                 });
             }, 100);
         }
 
         function selectHour(hour) {
             selectedHour = hour;
-            updateWheelPosition('hour', hour - 1);
+            // Position to middle duplicate set (offset by 12)
+            updateWheelPosition('hour', hour - 1 + 12);
         }
 
         function selectMinute(minute) {
             selectedMinute = minute;
-            updateWheelPosition('minute', minute);
+            // Position to middle duplicate set (offset by 60)
+            updateWheelPosition('minute', minute + 60);
         }
 
         function selectAMPM(period) {
             selectedAMPM = period;
-            updateWheelPosition('ampm', period === 'AM' ? 0 : 1);
+            // Position to middle duplicate set (offset by 2)
+            const index = period === 'AM' ? 0 : 1;
+            updateWheelPosition('ampm', index + 2);
         }
 
-        function updateWheelPosition(type, index) {
+        function updateWheelPosition(type, index, noAnimation) {
             const scrollElement = document.getElementById(`${type}-scroll`);
             if (!scrollElement) {
                 console.error('Scroll element not found:', type);
@@ -2199,7 +2349,17 @@
             
             console.log(`${type}: index=${index}, offset=${offset}px, itemHeight=${itemHeight}`);
             
+            if (noAnimation) {
+                scrollElement.style.transition = 'none';
+            }
             scrollElement.style.transform = `translateY(${offset}px)`;
+            
+            if (noAnimation) {
+                // Force a reflow to apply the no-transition immediately
+                scrollElement.offsetHeight;
+                scrollElement.style.transition = 'transform 0.3s ease-out';
+            }
+            
             updateSelectedItem(`${type}-scroll`, index);
         }
 
@@ -2213,6 +2373,123 @@
                     item.classList.remove('selected');
                 }
             });
+        }
+
+        function addInfiniteWheelListener(wheelId, scrollId, itemCount, onScroll) {
+            const wheel = document.getElementById(wheelId);
+            const scroll = document.getElementById(scrollId);
+            
+            // Total items = itemCount * 3 (original + duplicates before + duplicates after)
+            const totalItems = itemCount * 3;
+            
+            // Get item height based on screen size
+            function getItemHeight() {
+                return window.innerWidth <= 768 ? 35 : 40;
+            }
+            
+            let startY = 0;
+            let startTransform = 0;
+            let isDragging = false;
+            let velocity = 0;
+            let lastY = 0;
+            let lastTime = Date.now();
+            
+            wheel.addEventListener('mousedown', startDrag);
+            wheel.addEventListener('touchstart', startDrag);
+            
+            function startDrag(e) {
+                isDragging = true;
+                startY = e.type === 'mousedown' ? e.clientY : e.touches[0].clientY;
+                lastY = startY;
+                lastTime = Date.now();
+                velocity = 0;
+                
+                // Get current transform value
+                const transform = scroll.style.transform;
+                const match = transform.match(/translateY\((-?\d+(?:\.\d+)?)px\)/);
+                startTransform = match ? parseFloat(match[1]) : 0;
+                
+                document.addEventListener('mousemove', drag);
+                document.addEventListener('touchmove', drag, { passive: false });
+                document.addEventListener('mouseup', endDrag);
+                document.addEventListener('touchend', endDrag);
+            }
+            
+            function drag(e) {
+                if (!isDragging) return;
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const y = e.type === 'mousemove' ? e.clientY : e.touches[0].clientY;
+                const deltaY = y - lastY;
+                
+                const now = Date.now();
+                const deltaTime = now - lastTime;
+                if (deltaTime > 0) {
+                    velocity = deltaY / deltaTime;
+                }
+                lastY = y;
+                lastTime = now;
+                
+                // Calculate new position
+                const totalDelta = y - startY;
+                const newTransform = startTransform + totalDelta;
+                
+                // Disable transition during drag
+                scroll.style.transition = 'none';
+                scroll.style.transform = `translateY(${newTransform}px)`;
+                
+                // Update selected item during drag for live feedback
+                const itemHeight = getItemHeight();
+                const currentIndex = Math.round(-newTransform / itemHeight);
+                const clampedIndex = Math.max(0, Math.min(totalItems - 1, currentIndex));
+                updateSelectedItem(scrollId, clampedIndex);
+            }
+            
+            function endDrag() {
+                if (!isDragging) return;
+                isDragging = false;
+                
+                document.removeEventListener('mousemove', drag);
+                document.removeEventListener('touchmove', drag);
+                document.removeEventListener('mouseup', endDrag);
+                document.removeEventListener('touchend', endDrag);
+                
+                // Re-enable transition for snap animation
+                scroll.style.transition = 'transform 0.3s ease-out';
+                
+                // Calculate final position with momentum
+                const itemHeight = getItemHeight();
+                const currentTransform = startTransform + (lastY - startY);
+                const momentumDelta = velocity * 100;
+                const finalTransform = currentTransform + momentumDelta;
+                
+                // Snap to nearest item (allow any index for now)
+                let newIndex = Math.round(-finalTransform / itemHeight);
+                
+                // Check if we need to wrap
+                if (newIndex < itemCount) {
+                    // In first duplicate section, jump to real section
+                    const realIndex = newIndex + itemCount;
+                    updateWheelPosition(scrollId.replace('-scroll', ''), realIndex, true);
+                    newIndex = realIndex;
+                } else if (newIndex >= itemCount * 2) {
+                    // In last duplicate section, jump to real section
+                    const realIndex = newIndex - itemCount;
+                    updateWheelPosition(scrollId.replace('-scroll', ''), realIndex, true);
+                    newIndex = realIndex;
+                }
+                
+                // Clamp to valid range after wrapping
+                newIndex = Math.max(itemCount, Math.min(itemCount * 2 - 1, newIndex));
+                
+                updateWheelPosition(scrollId.replace('-scroll', ''), newIndex);
+                
+                // Calculate the actual value (0 to itemCount-1)
+                const actualIndex = newIndex - itemCount;
+                onScroll(actualIndex);
+                updateSelectedItem(scrollId, newIndex);
+            }
         }
 
         function addWheelScrollListener(wheelId, scrollId, itemCount, onScroll) {
@@ -2405,11 +2682,25 @@
 
         // Check for saved authentication on page load
         window.addEventListener('DOMContentLoaded', function() {
+            // Load saved theme immediately
+            const savedTheme = localStorage.getItem('tripPlannerTheme');
+            if (savedTheme) {
+                document.body.className = savedTheme;
+            }
+            
             const isAuthSaved = localStorage.getItem('tripPlannerAuth');
             const savedUsername = localStorage.getItem('tripPlannerUsername');
+            const savedPassword = localStorage.getItem('tripPlannerPassword');
             const savedTripId = localStorage.getItem('currentTripId');
             
-            if (isAuthSaved === 'true' && savedUsername) {
+            // Pre-fill form if credentials are saved
+            if (savedUsername && savedPassword) {
+                document.getElementById('auth-username').value = savedUsername;
+                document.getElementById('auth-password').value = savedPassword;
+                document.getElementById('remember-me').checked = true;
+            }
+            
+            if (isAuthSaved === 'true' && savedUsername && savedPassword) {
                 console.log('Auto-login: Checking credentials...');
                 
                 // Verify credentials still exist in Firebase
@@ -2417,7 +2708,7 @@
                     if (snapshot.exists()) {
                         const credentials = snapshot.val();
                         
-                        if (savedUsername === credentials.username) {
+                        if (savedUsername === credentials.username && savedPassword === credentials.password) {
                             console.log('Auto-login: Success');
                             isAuthenticated = true;
                             document.getElementById('auth-screen').style.display = 'none';
@@ -2435,12 +2726,14 @@
                             console.log('Auto-login: Credentials changed, clearing localStorage');
                             localStorage.removeItem('tripPlannerAuth');
                             localStorage.removeItem('tripPlannerUsername');
+                            localStorage.removeItem('tripPlannerPassword');
                             localStorage.removeItem('currentTripId');
                         }
                     } else {
                         console.log('Auto-login: No credentials found');
                         localStorage.removeItem('tripPlannerAuth');
                         localStorage.removeItem('tripPlannerUsername');
+                        localStorage.removeItem('tripPlannerPassword');
                         localStorage.removeItem('currentTripId');
                     }
                 }, { onlyOnce: true });
