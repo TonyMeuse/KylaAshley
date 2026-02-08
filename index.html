@@ -1504,9 +1504,8 @@
         function logout() {
             isAuthenticated = false;
             
-            // Clear localStorage
+            // Only clear the auto-login flag, keep username/password if they were saved
             localStorage.removeItem('tripPlannerAuth');
-            localStorage.removeItem('tripPlannerUsername');
             localStorage.removeItem('currentTripId');
             
             closeSettings();
@@ -1516,9 +1515,21 @@
             document.getElementById('auth-screen').style.display = 'flex';
             document.getElementById('login-screen').style.display = 'block';
             
-            // Clear form
-            document.getElementById('auth-username').value = '';
-            document.getElementById('auth-password').value = '';
+            // Pre-fill form if credentials are saved
+            const savedUsername = localStorage.getItem('tripPlannerUsername');
+            const savedPassword = localStorage.getItem('tripPlannerPassword');
+            
+            if (savedUsername && savedPassword) {
+                document.getElementById('auth-username').value = savedUsername;
+                document.getElementById('auth-password').value = savedPassword;
+                document.getElementById('remember-me').checked = true;
+            } else {
+                // Only clear form if credentials aren't saved
+                document.getElementById('auth-username').value = '';
+                document.getElementById('auth-password').value = '';
+                document.getElementById('remember-me').checked = false;
+            }
+            
             document.getElementById('auth-password-confirm').value = '';
             document.getElementById('auth-error').style.display = 'none';
             
@@ -1623,7 +1634,7 @@
                             tripsList.appendChild(tripCard);
                         });
                     } else {
-                        tripsList.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">No trips yet. Create your first trip!</p>';
+                        tripsList.innerHTML = '<p style="text-align: center; color: white; padding: 40px; font-size: 18px;">No trips yet. Create your first trip!</p>';
                     }
                 }, (error) => {
                     console.error('Error loading trips:', error);
