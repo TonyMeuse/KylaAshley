@@ -242,6 +242,7 @@
             justify-content: center;
             align-items: center;
             padding: 20px;
+            box-sizing: border-box;
         }
 
         .calendar-container {
@@ -251,6 +252,7 @@
             max-width: 500px;
             width: 100%;
             box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            box-sizing: border-box;
         }
 
         .calendar-header {
@@ -944,9 +946,19 @@
             }
 
             .calendar-container {
-                padding: 20px;
+                padding: 15px;
                 max-height: 90vh;
                 overflow-y: auto;
+                max-width: 95vw;
+            }
+
+            .calendar-grid {
+                gap: 2px;
+            }
+
+            .calendar-day-header {
+                font-size: 11px;
+                padding: 6px 2px;
             }
 
             .calendar-header h2 {
@@ -959,11 +971,23 @@
             }
 
             .calendar-day {
-                font-size: 12px;
+                font-size: 11px;
+                padding: 8px 4px;
+                min-height: 35px;
             }
 
             .calendar-selected-dates p {
                 font-size: 12px;
+            }
+
+            .calendar-confirm {
+                padding: 12px;
+                font-size: 14px;
+            }
+
+            .calendar-nav button {
+                padding: 8px 12px;
+                font-size: 14px;
             }
 
             .packing-input {
