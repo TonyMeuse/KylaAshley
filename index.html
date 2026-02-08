@@ -1220,8 +1220,8 @@
         <div class="header">
             <input type="text" class="trip-name-input" id="trip-name" placeholder="Enter Trip Name">
             <div class="date-display" id="date-display"></div>
-            <button onclick="editDates()" style="width: 100%; padding: 12px; background: #667eea; color: white; border: none; border-radius: 10px; margin-top: 10px; cursor: pointer; font-size: 14px;">
-                Edit Dates
+            <button onclick="editDates()" style="width: 100%; padding: 12px; background: white; color: #667eea; border: 2px solid #667eea; border-radius: 10px; margin-top: 10px; cursor: pointer; font-size: 14px; font-weight: bold;">
+                📅 Edit Dates
             </button>
         </div>
 
@@ -1402,6 +1402,11 @@
                         password: password
                     }).then(() => {
                         isAuthenticated = true;
+                        
+                        // Save to localStorage
+                        localStorage.setItem('tripPlannerAuth', 'true');
+                        localStorage.setItem('tripPlannerUsername', username);
+                        
                         document.getElementById('auth-screen').style.display = 'none';
                         document.getElementById('trips-dashboard').style.display = 'block';
                         loadTrips();
@@ -1444,6 +1449,11 @@
                     if (username === credentials.username && password === credentials.password) {
                         console.log('Login successful');
                         isAuthenticated = true;
+                        
+                        // Save to localStorage
+                        localStorage.setItem('tripPlannerAuth', 'true');
+                        localStorage.setItem('tripPlannerUsername', username);
+                        
                         const authScreen = document.getElementById('auth-screen');
                         const dashboard = document.getElementById('trips-dashboard');
                         
@@ -1473,6 +1483,11 @@
         // Logout function
         function logout() {
             isAuthenticated = false;
+            
+            // Clear localStorage
+            localStorage.removeItem('tripPlannerAuth');
+            localStorage.removeItem('tripPlannerUsername');
+            
             closeSettings();
             document.getElementById('main-app').style.display = 'none';
             document.getElementById('calendar-modal').style.display = 'none';
@@ -2347,6 +2362,39 @@
         document.getElementById('new-trip-name')?.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 createNewTrip();
+            }
+        });
+
+        // Check for saved authentication on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            const isAuthSaved = localStorage.getItem('tripPlannerAuth');
+            const savedUsername = localStorage.getItem('tripPlannerUsername');
+            
+            if (isAuthSaved === 'true' && savedUsername) {
+                console.log('Auto-login: Checking credentials...');
+                
+                // Verify credentials still exist in Firebase
+                onValue(ref(database, 'credentials'), (snapshot) => {
+                    if (snapshot.exists()) {
+                        const credentials = snapshot.val();
+                        
+                        if (savedUsername === credentials.username) {
+                            console.log('Auto-login: Success');
+                            isAuthenticated = true;
+                            document.getElementById('auth-screen').style.display = 'none';
+                            document.getElementById('trips-dashboard').style.display = 'block';
+                            loadTrips();
+                        } else {
+                            console.log('Auto-login: Credentials changed, clearing localStorage');
+                            localStorage.removeItem('tripPlannerAuth');
+                            localStorage.removeItem('tripPlannerUsername');
+                        }
+                    } else {
+                        console.log('Auto-login: No credentials found');
+                        localStorage.removeItem('tripPlannerAuth');
+                        localStorage.removeItem('tripPlannerUsername');
+                    }
+                }, { onlyOnce: true });
             }
         });
     </script>
