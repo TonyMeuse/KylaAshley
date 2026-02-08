@@ -169,6 +169,55 @@
             font-size: 14px;
         }
 
+        /* Trip Cards */
+        .trip-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .trip-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 25px rgba(0,0,0,0.15);
+        }
+
+        .trip-card-info h3 {
+            font-size: 22px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .trip-card-info p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .trip-card-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .trip-delete-btn {
+            background: #f5576c;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .trip-delete-btn:hover {
+            background: #e04556;
+        }
+
         /* Calendar Modal */
         #calendar-modal {
             display: none;
@@ -889,15 +938,48 @@
             
             <button id="auth-submit-btn" onclick="handleAuth()">Login</button>
             <p class="error" id="auth-error"></p>
-            
-            <!-- Debug button (remove this later) -->
-            <button style="background: #999; font-size: 12px; padding: 8px; margin-top: 5px;" onclick="debugFirebase()">Debug: Check Firebase</button>
-            
             <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
                 <p style="color: #666; font-size: 14px; margin-bottom: 10px;" id="switch-text">Don't have an account?</p>
                 <button style="background: transparent; color: #667eea; border: 2px solid #667eea;" onclick="toggleAuthMode()">
                     <span id="switch-btn-text">Create New Account</span>
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trips Dashboard -->
+    <div id="trips-dashboard" style="display: none;">
+        <div style="max-width: 900px; margin: 0 auto;">
+            <!-- Dashboard Header -->
+            <div class="header" style="display: flex; justify-content: space-between; align-items: center;">
+                <h1 style="font-size: 32px; color: #333;">My Trips</h1>
+                <button class="settings-btn" onclick="openSettings()" style="position: relative; top: 0; right: 0;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Create New Trip Button -->
+            <div style="margin: 30px 0;">
+                <button onclick="showNewTripModal()" style="width: 100%; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 15px; font-size: 18px; font-weight: bold; cursor: pointer; transition: transform 0.2s;">
+                    + Create New Trip
+                </button>
+            </div>
+
+            <!-- Trips List -->
+            <div id="trips-list"></div>
+        </div>
+    </div>
+
+    <!-- New Trip Modal -->
+    <div id="new-trip-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 2000; justify-content: center; align-items: center; padding: 20px;">
+        <div style="background: white; padding: 40px; border-radius: 20px; max-width: 500px; width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+            <h2 style="margin-bottom: 20px; color: #333;">Create New Trip</h2>
+            <input type="text" id="new-trip-name" placeholder="Enter trip name (e.g., Hawaii Vacation)" style="width: 100%; padding: 15px; font-size: 16px; border: 2px solid #ddd; border-radius: 10px; margin-bottom: 20px;">
+            <div style="display: flex; gap: 10px;">
+                <button onclick="closeNewTripModal()" style="flex: 1; padding: 15px; background: #e0e0e0; color: #333; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer;">Cancel</button>
+                <button onclick="createNewTrip()" style="flex: 1; padding: 15px; background: #667eea; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer;">Create</button>
             </div>
         </div>
     </div>
@@ -987,6 +1069,13 @@
             </svg>
         </div>
 
+        <!-- Back Button -->
+        <div class="settings-btn" onclick="backToDashboard()" style="left: 20px; right: auto;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+            </svg>
+        </div>
+
         <!-- Header -->
         <div class="header">
             <input type="text" class="trip-name-input" id="trip-name" placeholder="Enter Trip Name">
@@ -1055,6 +1144,7 @@
         let isAuthenticated = false;
         let isUpdatingFromFirebase = false;
         let isSignupMode = false;
+        let currentTripId = null;
 
         // Check if account exists on page load
         window.addEventListener('DOMContentLoaded', () => {
@@ -1169,13 +1259,11 @@
                         username: username,
                         password: password
                     }).then(() => {
-                        console.log('Account created successfully');
                         isAuthenticated = true;
                         document.getElementById('auth-screen').style.display = 'none';
-                        document.getElementById('calendar-modal').style.display = 'flex';
-                        renderCalendar();
+                        document.getElementById('trips-dashboard').style.display = 'block';
+                        loadTrips();
                     }).catch((error) => {
-                        console.error('Error creating account:', error);
                         errorElement.textContent = 'Error creating account. Please try again.';
                         errorElement.style.display = 'block';
                     });
@@ -1183,7 +1271,6 @@
             }, {
                 onlyOnce: true
             }, (error) => {
-                console.error('Check account error:', error);
                 errorElement.textContent = 'Error checking account. Please try again.';
                 errorElement.style.display = 'block';
             });
@@ -1212,15 +1299,11 @@
                 if (snapshot.exists()) {
                     const credentials = snapshot.val();
                     
-                    console.log('Stored credentials:', credentials);
-                    console.log('Entered username:', username);
-                    console.log('Entered password:', password);
-                    
                     if (username === credentials.username && password === credentials.password) {
                         isAuthenticated = true;
                         document.getElementById('auth-screen').style.display = 'none';
-                        document.getElementById('calendar-modal').style.display = 'flex';
-                        renderCalendar();
+                        document.getElementById('trips-dashboard').style.display = 'block';
+                        loadTrips();
                     } else {
                         errorElement.textContent = 'Invalid username or password';
                         errorElement.style.display = 'block';
@@ -1232,7 +1315,6 @@
             }, {
                 onlyOnce: true
             }, (error) => {
-                console.error('Login error:', error);
                 errorElement.textContent = 'Error accessing account. Please try again.';
                 errorElement.style.display = 'block';
             });
@@ -1244,6 +1326,7 @@
             closeSettings();
             document.getElementById('main-app').style.display = 'none';
             document.getElementById('calendar-modal').style.display = 'none';
+            document.getElementById('trips-dashboard').style.display = 'none';
             document.getElementById('auth-screen').style.display = 'flex';
             document.getElementById('login-screen').style.display = 'block';
             
@@ -1257,23 +1340,122 @@
             if (isSignupMode) {
                 toggleAuthMode();
             }
+            
+            currentTripId = null;
         }
 
-        // Debug function to check Firebase
-        function debugFirebase() {
-            const errorElement = document.getElementById('auth-error');
-            errorElement.style.display = 'none';
+        // Trip Management Functions
+        function showNewTripModal() {
+            document.getElementById('new-trip-modal').style.display = 'flex';
+            document.getElementById('new-trip-name').value = '';
+        }
+
+        function closeNewTripModal() {
+            document.getElementById('new-trip-modal').style.display = 'none';
+        }
+
+        function createNewTrip() {
+            const tripName = document.getElementById('new-trip-name').value.trim();
             
-            onValue(ref(database, 'credentials'), (snapshot) => {
+            if (!tripName) {
+                alert('Please enter a trip name');
+                return;
+            }
+            
+            const tripId = push(ref(database, 'trips')).key;
+            const newTrip = {
+                name: tripName,
+                created: Date.now()
+            };
+            
+            set(ref(database, `trips/${tripId}`), newTrip).then(() => {
+                closeNewTripModal();
+                openTrip(tripId);
+            });
+        }
+
+        function loadTrips() {
+            onValue(ref(database, 'trips'), (snapshot) => {
+                const tripsList = document.getElementById('trips-list');
+                tripsList.innerHTML = '';
+                
                 if (snapshot.exists()) {
-                    const data = snapshot.val();
-                    alert('Account exists!\n\nUsername: ' + data.username + '\nPassword: ' + data.password + '\n\nTry logging in with these exact credentials.');
-                    console.log('Firebase credentials:', data);
+                    const trips = snapshot.val();
+                    const sortedTrips = Object.entries(trips).sort((a, b) => (b[1].created || 0) - (a[1].created || 0));
+                    
+                    sortedTrips.forEach(([tripId, tripData]) => {
+                        const tripCard = document.createElement('div');
+                        tripCard.className = 'trip-card';
+                        
+                        let dateText = 'No dates set';
+                        if (tripData.dates) {
+                            const start = new Date(tripData.dates.start).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                            const end = new Date(tripData.dates.end).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                            dateText = `${start} - ${end}`;
+                        }
+                        
+                        tripCard.innerHTML = `
+                            <div class="trip-card-info" onclick="openTrip('${tripId}')">
+                                <h3>${tripData.name || 'Untitled Trip'}</h3>
+                                <p>${dateText}</p>
+                            </div>
+                            <div class="trip-card-actions">
+                                <button class="trip-delete-btn" onclick="event.stopPropagation(); deleteTrip('${tripId}')">Delete</button>
+                            </div>
+                        `;
+                        
+                        tripsList.appendChild(tripCard);
+                    });
                 } else {
-                    alert('No account exists in Firebase yet. Click "Create New Account" to make one.');
-                    console.log('No credentials found in Firebase');
+                    tripsList.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">No trips yet. Create your first trip!</p>';
+                }
+            });
+        }
+
+        function openTrip(tripId) {
+            currentTripId = tripId;
+            
+            // Load trip data
+            onValue(ref(database, `trips/${tripId}`), (snapshot) => {
+                if (snapshot.exists()) {
+                    const tripData = snapshot.val();
+                    
+                    if (tripData.dates) {
+                        startDate = new Date(tripData.dates.start);
+                        endDate = new Date(tripData.dates.end);
+                        
+                        document.getElementById('trips-dashboard').style.display = 'none';
+                        document.getElementById('main-app').style.display = 'block';
+                        
+                        document.getElementById('trip-name').value = tripData.name || '';
+                        generateDayBlocks();
+                        setupTripListeners(tripId);
+                        
+                        // Update date display
+                        document.getElementById('date-display').textContent = 
+                            `${startDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} - ${endDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
+                    } else {
+                        // No dates set, show calendar
+                        document.getElementById('trips-dashboard').style.display = 'none';
+                        document.getElementById('calendar-modal').style.display = 'flex';
+                        renderCalendar();
+                    }
                 }
             }, { onlyOnce: true });
+        }
+
+        function backToDashboard() {
+            document.getElementById('main-app').style.display = 'none';
+            document.getElementById('trips-dashboard').style.display = 'block';
+            currentTripId = null;
+            startDate = null;
+            endDate = null;
+        }
+
+        function deleteTrip(tripId) {
+            if (confirm('Are you sure you want to delete this trip? This cannot be undone.')) {
+                remove(ref(database, `trips/${tripId}`));
+            }
         }
 
         // Allow Enter key for auth
@@ -1397,8 +1579,8 @@
             document.getElementById('calendar-modal').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
             
-            // Save dates to Firebase
-            set(ref(database, 'tripDates'), {
+            // Save dates to Firebase for current trip
+            set(ref(database, `trips/${currentTripId}/dates`), {
                 start: startDate.toISOString(),
                 end: endDate.toISOString()
             });
@@ -1438,14 +1620,14 @@
 
         // Event management
         function addEvent(dayIndex) {
-            const eventId = push(ref(database, `days/day${dayIndex}/events`)).key;
+            const eventId = push(ref(database, `trips/${currentTripId}/days/day${dayIndex}/events`)).key;
             const newEvent = {
                 time: '09:00',
                 description: '',
                 order: Date.now()
             };
             
-            set(ref(database, `days/day${dayIndex}/events/${eventId}`), newEvent);
+            set(ref(database, `trips/${currentTripId}/days/day${dayIndex}/events/${eventId}`), newEvent);
         }
 
         function renderEvent(dayIndex, eventId, eventData) {
@@ -1497,12 +1679,12 @@
             if (isUpdatingFromFirebase) return;
             
             const updates = {};
-            updates[`days/day${dayIndex}/events/${eventId}/${field}`] = value;
+            updates[`trips/${currentTripId}/days/day${dayIndex}/events/${eventId}/${field}`] = value;
             update(ref(database), updates);
         }
 
         function deleteEvent(dayIndex, eventId) {
-            remove(ref(database, `days/day${dayIndex}/events/${eventId}`));
+            remove(ref(database, `trips/${currentTripId}/days/day${dayIndex}/events/${eventId}`));
         }
 
         // Drag and drop
@@ -1540,7 +1722,7 @@
             
             events.forEach((event, index) => {
                 const eventId = event.dataset.eventId;
-                update(ref(database, `days/day${dayIndex}/events/${eventId}`), {
+                update(ref(database, `trips/${currentTripId}/days/day${dayIndex}/events/${eventId}`), {
                     order: index
                 });
             });
@@ -1567,8 +1749,8 @@
             const itemText = input.value.trim();
             
             if (itemText) {
-                const itemId = push(ref(database, 'packingList')).key;
-                set(ref(database, `packingList/${itemId}`), {
+                const itemId = push(ref(database, `trips/${currentTripId}/packingList`)).key;
+                set(ref(database, `trips/${currentTripId}/packingList/${itemId}`), {
                     text: itemText,
                     checked: false,
                     timestamp: Date.now()
@@ -1579,11 +1761,11 @@
 
         function togglePackingItem(itemId, checked) {
             if (isUpdatingFromFirebase) return;
-            update(ref(database, `packingList/${itemId}`), { checked: checked });
+            update(ref(database, `trips/${currentTripId}/packingList/${itemId}`), { checked: checked });
         }
 
         function deletePackingItem(itemId) {
-            remove(ref(database, `packingList/${itemId}`));
+            remove(ref(database, `trips/${currentTripId}/packingList/${itemId}`));
         }
 
         function renderPackingItem(itemId, itemData) {
@@ -1629,7 +1811,9 @@
             event.target.classList.add('active');
             
             // Save to Firebase
-            set(ref(database, 'settings/theme'), theme);
+            if (currentTripId) {
+                set(ref(database, `trips/${currentTripId}/settings/theme`), theme);
+            }
         }
 
         // Time Picker
@@ -1843,53 +2027,25 @@
         // Firebase listeners
         function setupListeners() {
             // Trip name
-            onValue(ref(database, 'tripName'), (snapshot) => {
-                if (snapshot.exists() && !isUpdatingFromFirebase) {
-                    isUpdatingFromFirebase = true;
-                    document.getElementById('trip-name').value = snapshot.val();
-                    isUpdatingFromFirebase = false;
-                }
-            });
-
             document.getElementById('trip-name').addEventListener('input', function(e) {
-                if (!isUpdatingFromFirebase) {
-                    set(ref(database, 'tripName'), e.target.value);
+                if (!isUpdatingFromFirebase && currentTripId) {
+                    set(ref(database, `trips/${currentTripId}/name`), e.target.value);
                 }
             });
 
             // General notes
-            onValue(ref(database, 'generalNotes'), (snapshot) => {
-                if (snapshot.exists() && !isUpdatingFromFirebase) {
-                    isUpdatingFromFirebase = true;
-                    document.getElementById('general-notes').value = snapshot.val();
-                    isUpdatingFromFirebase = false;
-                }
-            });
-
             document.getElementById('general-notes').addEventListener('input', function(e) {
-                if (!isUpdatingFromFirebase) {
-                    set(ref(database, 'generalNotes'), e.target.value);
+                if (!isUpdatingFromFirebase && currentTripId) {
+                    set(ref(database, `trips/${currentTripId}/generalNotes`), e.target.value);
                 }
             });
+        }
 
-            // Trip dates
-            onValue(ref(database, 'tripDates'), (snapshot) => {
-                if (snapshot.exists() && !startDate) {
-                    const dates = snapshot.val();
-                    startDate = new Date(dates.start);
-                    endDate = new Date(dates.end);
-                    
-                    if (isAuthenticated && !document.getElementById('itinerary-section').children.length) {
-                        document.getElementById('calendar-modal').style.display = 'none';
-                        document.getElementById('main-app').style.display = 'block';
-                        generateDayBlocks();
-                    }
-                }
-            });
-
+        // Setup listeners for specific trip
+        function setupTripListeners(tripId) {
             // Events for all days
             for (let i = 0; i < 30; i++) {
-                onValue(ref(database, `days/day${i}/events`), (snapshot) => {
+                onValue(ref(database, `trips/${tripId}/days/day${i}/events`), (snapshot) => {
                     const container = document.getElementById(`events-day-${i}`);
                     if (!container) return;
                     
@@ -1913,8 +2069,15 @@
                 });
             }
 
+            // General notes - load once
+            onValue(ref(database, `trips/${tripId}/generalNotes`), (snapshot) => {
+                if (snapshot.exists()) {
+                    document.getElementById('general-notes').value = snapshot.val();
+                }
+            }, { onlyOnce: true });
+
             // Packing list
-            onValue(ref(database, 'packingList'), (snapshot) => {
+            onValue(ref(database, `trips/${tripId}/packingList`), (snapshot) => {
                 const list = document.getElementById('packing-list');
                 list.innerHTML = '';
                 
@@ -1932,12 +2095,12 @@
             });
 
             // Theme
-            onValue(ref(database, 'settings/theme'), (snapshot) => {
+            onValue(ref(database, `trips/${tripId}/settings/theme`), (snapshot) => {
                 if (snapshot.exists()) {
                     const theme = snapshot.val();
                     document.body.className = theme;
                 }
-            });
+            }, { onlyOnce: true });
         }
 
         // Allow Enter key for packing list
@@ -1946,6 +2109,13 @@
                 addPackingItem();
             }
         });
+
+        // Allow Enter key for new trip name
+        document.getElementById('new-trip-name')?.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                createNewTrip();
+            }
+        });
     </script>
 </body>
-</html>s
+</html>
