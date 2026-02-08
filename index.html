@@ -200,6 +200,11 @@
             margin-bottom: 8px;
         }
 
+        .trip-card-info {
+            cursor: pointer;
+            flex: 1;
+        }
+
         .trip-card-info p {
             color: #666;
             font-size: 14px;
@@ -772,7 +777,8 @@
         .time-picker-wheels {
             display: flex;
             justify-content: center;
-            gap: 10px;
+            align-items: center;
+            gap: 5px;
             height: 200px;
             margin-bottom: 20px;
             position: relative;
@@ -784,7 +790,7 @@
             left: 0;
             right: 0;
             top: 50%;
-            transform: translateY(-50%);
+            margin-top: -20px;
             height: 40px;
             background: rgba(102, 126, 234, 0.1);
             border-top: 2px solid #667eea;
@@ -794,7 +800,7 @@
         }
 
         .time-wheel {
-            width: 80px;
+            width: 70px;
             height: 200px;
             overflow: hidden;
             position: relative;
@@ -802,35 +808,59 @@
             border-radius: 10px;
             touch-action: pan-y;
             user-select: none;
+            flex-shrink: 0;
         }
 
         .time-wheel.am-pm {
-            width: 100px;
+            width: 80px;
+        }
+
+        .wheel-separator {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            padding: 0 5px;
+            z-index: 2;
+            line-height: 1;
+            align-self: center;
+            margin-top: 0;
         }
 
         .time-wheel-scroll {
             position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            top: 50%;
-            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             transition: transform 0.3s ease-out;
+            will-change: transform;
+            padding: 80px 0;
+        }
+
+        #ampm-scroll {
+            padding: 80px 0 !important;
         }
 
         .time-wheel-item {
+            width: 100%;
             height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: 18px;
             color: #999;
             cursor: pointer;
             user-select: none;
+            font-weight: 500;
+            flex-shrink: 0;
         }
 
         .time-wheel-item.selected {
             color: #333;
             font-weight: bold;
-            font-size: 24px;
+            font-size: 22px;
         }
 
         .time-picker-buttons {
@@ -946,19 +976,35 @@
 
             .time-picker-container {
                 padding: 20px;
-                max-width: 90%;
+                max-width: 95%;
             }
 
             .time-picker-container h3 {
                 font-size: 18px;
+                margin-bottom: 15px;
+            }
+
+            .time-picker-wheels {
+                height: 180px;
+                gap: 3px;
+            }
+
+            .time-picker-wheels::before {
+                height: 35px;
             }
 
             .time-wheel {
-                width: 60px;
+                width: 55px;
+                height: 180px;
             }
 
             .time-wheel.am-pm {
-                width: 70px;
+                width: 65px;
+            }
+
+            .wheel-separator {
+                font-size: 20px;
+                padding: 0 3px;
             }
 
             .time-wheel-item {
@@ -967,7 +1013,7 @@
             }
 
             .time-wheel-item.selected {
-                font-size: 20px;
+                font-size: 19px;
             }
         }
     </style>
@@ -983,7 +1029,7 @@
             
             <div class="password-field-wrapper">
                 <input type="password" id="auth-password" placeholder="Password">
-                <button type="button" class="password-toggle" onclick="togglePasswordVisibility('auth-password')">
+                <button type="button" class="password-toggle" onclick="togglePasswordVisibility('auth-password', this)">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="eye-open">
                         <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
                     </svg>
@@ -995,7 +1041,7 @@
             
             <div class="password-field-wrapper" id="confirm-password-wrapper" style="display: none;">
                 <input type="password" id="auth-password-confirm" placeholder="Confirm password">
-                <button type="button" class="password-toggle" onclick="togglePasswordVisibility('auth-password-confirm')">
+                <button type="button" class="password-toggle" onclick="togglePasswordVisibility('auth-password-confirm', this)">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="eye-open">
                         <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
                     </svg>
@@ -1115,7 +1161,7 @@
                 <div class="time-wheel" id="hour-wheel">
                     <div class="time-wheel-scroll" id="hour-scroll"></div>
                 </div>
-                <div style="display: flex; align-items: center; font-size: 24px; font-weight: bold; color: #333;">:</div>
+                <span class="wheel-separator">:</span>
                 <div class="time-wheel" id="minute-wheel">
                     <div class="time-wheel-scroll" id="minute-scroll"></div>
                 </div>
@@ -1253,9 +1299,8 @@
         }
 
         // Toggle password visibility
-        function togglePasswordVisibility(inputId) {
+        function togglePasswordVisibility(inputId, button) {
             const input = document.getElementById(inputId);
-            const button = event.currentTarget;
             const eyeOpen = button.querySelector('.eye-open');
             const eyeClosed = button.querySelector('.eye-closed');
             
@@ -1368,14 +1413,22 @@
             const credRef = ref(database, 'credentials');
             
             // Use onValue with onlyOnce option for proper async handling
-            const unsubscribe = onValue(credRef, (snapshot) => {
+            onValue(credRef, (snapshot) => {
                 if (snapshot.exists()) {
                     const credentials = snapshot.val();
                     
                     if (username === credentials.username && password === credentials.password) {
+                        console.log('Login successful');
                         isAuthenticated = true;
-                        document.getElementById('auth-screen').style.display = 'none';
-                        document.getElementById('trips-dashboard').style.display = 'block';
+                        const authScreen = document.getElementById('auth-screen');
+                        const dashboard = document.getElementById('trips-dashboard');
+                        
+                        authScreen.style.display = 'none';
+                        dashboard.style.display = 'block';
+                        
+                        console.log('Auth screen display:', authScreen.style.display);
+                        console.log('Dashboard display:', dashboard.style.display);
+                        
                         loadTrips();
                     } else {
                         errorElement.textContent = 'Invalid username or password';
@@ -1388,7 +1441,7 @@
             }, {
                 onlyOnce: true
             }, (error) => {
-                errorElement.textContent = 'Error accessing account. Please try again.';
+                errorElement.textContent = 'Error accessing account: ' + error.message;
                 errorElement.style.display = 'block';
             });
         }
@@ -1448,2266 +1501,88 @@
         }
 
         function loadTrips() {
-            onValue(ref(database, 'trips'), (snapshot) => {
-                const tripsList = document.getElementById('trips-list');
-                tripsList.innerHTML = '';
-                
-                if (snapshot.exists()) {
-                    const trips = snapshot.val();
-                    const sortedTrips = Object.entries(trips).sort((a, b) => (b[1].created || 0) - (a[1].created || 0));
+            console.log('Loading trips...');
+            try {
+                onValue(ref(database, 'trips'), (snapshot) => {
+                    console.log('Trips snapshot:', snapshot.exists());
+                    const tripsList = document.getElementById('trips-list');
                     
-                    sortedTrips.forEach(([tripId, tripData]) => {
-                        const tripCard = document.createElement('div');
-                        tripCard.className = 'trip-card';
-                        
-                        let dateText = 'No dates set';
-                        if (tripData.dates) {
-                            const start = new Date(tripData.dates.start).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                            const end = new Date(tripData.dates.end).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                            dateText = `${start} - ${end}`;
-                        }
-                        
-                        tripCard.innerHTML = `
-                            <div class="trip-card-info" onclick="openTrip('${tripId}')">
-                                <h3>${tripData.name || 'Untitled Trip'}</h3>
-                                <p>${dateText}</p>
-                            </div>
-                            <div class="trip-card-actions">
-                                <button class="trip-delete-btn" onclick="event.stopPropagation(); deleteTrip('${tripId}')">Delete</button>
-                            </div>
-                        `;
-                        
-                        tripsList.appendChild(tripCard);
-                    });
-                } else {
-                    tripsList.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">No trips yet. Create your first trip!</p>';
-                }
-            });
-        }
-
-        function openTrip(tripId) {
-            currentTripId = tripId;
-            
-            // Load trip data
-            onValue(ref(database, `trips/${tripId}`), (snapshot) => {
-                if (snapshot.exists()) {
-                    const tripData = snapshot.val();
-                    
-                    if (tripData.dates) {
-                        startDate = new Date(tripData.dates.start);
-                        endDate = new Date(tripData.dates.end);
-                        
-                        document.getElementById('trips-dashboard').style.display = 'none';
-                        document.getElementById('main-app').style.display = 'block';
-                        
-                        document.getElementById('trip-name').value = tripData.name || '';
-                        generateDayBlocks();
-                        setupTripListeners(tripId);
-                        
-                        // Update date display
-                        document.getElementById('date-display').textContent = 
-                            `${startDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} - ${endDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
-                    } else {
-                        // No dates set, show calendar
-                        document.getElementById('trips-dashboard').style.display = 'none';
-                        document.getElementById('calendar-modal').style.display = 'flex';
-                        renderCalendar();
+                    if (!tripsList) {
+                        console.error('trips-list element not found');
+                        return;
                     }
-                }
-            }, { onlyOnce: true });
-        }
-
-        function backToDashboard() {
-            document.getElementById('main-app').style.display = 'none';
-            document.getElementById('trips-dashboard').style.display = 'block';
-            currentTripId = null;
-            startDate = null;
-            endDate = null;
-        }
-
-        function deleteTrip(tripId) {
-            if (confirm('Are you sure you want to delete this trip? This cannot be undone.')) {
-                remove(ref(database, `trips/${tripId}`));
-            }
-        }
-
-        // Allow Enter key for auth
-        document.getElementById('auth-password')?.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && !isSignupMode) {
-                handleAuth();
-            }
-        });
-
-        document.getElementById('auth-password-confirm')?.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && isSignupMode) {
-                handleAuth();
-            }
-        });
-
-        // Calendar functions
-        function renderCalendar() {
-            const grid = document.querySelector('.calendar-grid');
-            const monthYear = document.getElementById('calendar-month-year');
-            
-            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
-            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-            
-            monthYear.textContent = new Date(currentYear, currentMonth).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-            
-            // Clear existing days
-            const existingDays = grid.querySelectorAll('.calendar-day');
-            existingDays.forEach(day => day.remove());
-            
-            // Add empty cells for days before month starts
-            for (let i = 0; i < firstDay; i++) {
-                const emptyDay = document.createElement('div');
-                emptyDay.className = 'calendar-day disabled';
-                grid.appendChild(emptyDay);
-            }
-            
-            // Add days
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dayDiv = document.createElement('div');
-                dayDiv.className = 'calendar-day';
-                dayDiv.textContent = day;
-                dayDiv.onclick = () => selectDate(day);
-                
-                const date = new Date(currentYear, currentMonth, day);
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                
-                if (date < today) {
-                    dayDiv.classList.add('disabled');
-                    dayDiv.onclick = null;
-                }
-                
-                // Highlight selected dates
-                if (startDate && date.getTime() === startDate.getTime()) {
-                    dayDiv.classList.add('selected');
-                }
-                if (endDate && date.getTime() === endDate.getTime()) {
-                    dayDiv.classList.add('selected');
-                }
-                if (startDate && endDate && date > startDate && date < endDate) {
-                    dayDiv.classList.add('in-range');
-                }
-                
-                grid.appendChild(dayDiv);
-            }
-        }
-
-        function selectDate(day) {
-            const selected = new Date(currentYear, currentMonth, day);
-            
-            if (!startDate || (startDate && endDate)) {
-                // First selection or reset
-                startDate = selected;
-                endDate = null;
-            } else if (selected < startDate) {
-                // Selected before start, make it the new start
-                endDate = startDate;
-                startDate = selected;
-            } else {
-                // Second selection
-                endDate = selected;
-            }
-            
-            updateDateDisplay();
-            renderCalendar();
-            
-            document.getElementById('confirm-dates').disabled = !(startDate && endDate);
-        }
-
-        function updateDateDisplay() {
-            const startDisplay = document.getElementById('start-date-display');
-            const endDisplay = document.getElementById('end-date-display');
-            
-            startDisplay.textContent = startDate ? startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Not selected';
-            endDisplay.textContent = endDate ? endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Not selected';
-        }
-
-        function previousMonth() {
-            if (currentMonth === 0) {
-                currentMonth = 11;
-                currentYear--;
-            } else {
-                currentMonth--;
-            }
-            renderCalendar();
-        }
-
-        function nextMonth() {
-            if (currentMonth === 11) {
-                currentMonth = 0;
-                currentYear++;
-            } else {
-                currentMonth++;
-            }
-            renderCalendar();
-        }
-
-        function confirmDates() {
-            if (!startDate || !endDate) return;
-            
-            document.getElementById('calendar-modal').style.display = 'none';
-            document.getElementById('main-app').style.display = 'block';
-            
-            // Save dates to Firebase for current trip
-            set(ref(database, `trips/${currentTripId}/dates`), {
-                start: startDate.toISOString(),
-                end: endDate.toISOString()
-            });
-            
-            generateDayBlocks();
-        }
-
-        function cancelCalendar() {
-            document.getElementById('calendar-modal').style.display = 'none';
-            
-            // If no dates were set, go back to dashboard
-            if (!startDate || !endDate) {
-                backToDashboard();
-            } else {
-                // If dates exist, go back to trip view
-                document.getElementById('main-app').style.display = 'block';
-            }
-        }
-
-        function editDates() {
-            document.getElementById('main-app').style.display = 'none';
-            document.getElementById('calendar-modal').style.display = 'flex';
-            renderCalendar();
-        }
-
-        function generateDayBlocks() {
-            const container = document.getElementById('itinerary-section');
-            container.innerHTML = '';
-            
-            const daysDiff = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
-            
-            for (let i = 0; i < daysDiff; i++) {
-                const currentDate = new Date(startDate);
-                currentDate.setDate(startDate.getDate() + i);
-                
-                const dayBlock = document.createElement('div');
-                dayBlock.className = 'day-block';
-                dayBlock.dataset.dayIndex = i;
-                
-                const dayName = currentDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-                
-                dayBlock.innerHTML = `
-                    <div class="day-header">Day ${i + 1} - ${dayName}</div>
-                    <div class="events-list" id="events-day-${i}"></div>
-                    <button class="add-event-btn" onclick="addEvent(${i})">+ Add Event</button>
-                `;
-                
-                container.appendChild(dayBlock);
-            }
-            
-            // Update date display in header
-            document.getElementById('date-display').textContent = 
-                `${startDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} - ${endDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
-        }
-
-        // Event management
-        function addEvent(dayIndex) {
-            const eventId = push(ref(database, `trips/${currentTripId}/days/day${dayIndex}/events`)).key;
-            const newEvent = {
-                time: '09:00',
-                description: '',
-                order: Date.now()
-            };
-            
-            set(ref(database, `trips/${currentTripId}/days/day${dayIndex}/events/${eventId}`), newEvent);
-        }
-
-        function renderEvent(dayIndex, eventId, eventData) {
-            const container = document.getElementById(`events-day-${dayIndex}`);
-            
-            let eventDiv = document.getElementById(`event-${eventId}`);
-            if (!eventDiv) {
-                eventDiv = document.createElement('div');
-                eventDiv.className = 'event-item';
-                eventDiv.id = `event-${eventId}`;
-                eventDiv.draggable = true;
-                eventDiv.dataset.eventId = eventId;
-                eventDiv.dataset.dayIndex = dayIndex;
-                
-                eventDiv.addEventListener('dragstart', handleDragStart);
-                eventDiv.addEventListener('dragover', handleDragOver);
-                eventDiv.addEventListener('drop', handleDrop);
-                eventDiv.addEventListener('dragend', handleDragEnd);
-                
-                container.appendChild(eventDiv);
-            }
-            
-            // Convert 24hr time to 12hr format for display
-            let displayTime = eventData.time || '09:00';
-            if (eventData.time) {
-                const [hours, minutes] = eventData.time.split(':');
-                const hour = parseInt(hours);
-                const ampm = hour >= 12 ? 'PM' : 'AM';
-                const displayHour = hour === 0 ? 12 : (hour > 12 ? hour - 12 : hour);
-                displayTime = `${displayHour}:${minutes} ${ampm}`;
-            } else {
-                displayTime = '9:00 AM';
-            }
-            
-            eventDiv.innerHTML = `
-                <div class="event-content">
-                    <div class="event-time">
-                        <div class="time-display" onclick="openTimePicker(${dayIndex}, '${eventId}', '${eventData.time || '09:00'}')">${displayTime}</div>
-                    </div>
-                    <div class="event-description">
-                        <input type="text" value="${eventData.description || ''}" placeholder="What are you doing?" onchange="updateEvent(${dayIndex}, '${eventId}', 'description', this.value)">
-                    </div>
-                </div>
-                <button class="delete-event" onclick="deleteEvent(${dayIndex}, '${eventId}')">🗑️</button>
-            `;
-        }
-
-        function updateEvent(dayIndex, eventId, field, value) {
-            if (isUpdatingFromFirebase) return;
-            
-            const updates = {};
-            updates[`trips/${currentTripId}/days/day${dayIndex}/events/${eventId}/${field}`] = value;
-            update(ref(database), updates);
-        }
-
-        function deleteEvent(dayIndex, eventId) {
-            remove(ref(database, `trips/${currentTripId}/days/day${dayIndex}/events/${eventId}`));
-        }
-
-        // Drag and drop
-        let draggedElement = null;
-
-        function handleDragStart(e) {
-            draggedElement = e.target;
-            e.target.classList.add('dragging');
-        }
-
-        function handleDragOver(e) {
-            e.preventDefault();
-            const afterElement = getDragAfterElement(e.target.closest('.events-list'), e.clientY);
-            const dragging = document.querySelector('.dragging');
-            const container = e.target.closest('.events-list');
-            
-            if (afterElement == null) {
-                container.appendChild(dragging);
-            } else {
-                container.insertBefore(dragging, afterElement);
-            }
-        }
-
-        function handleDrop(e) {
-            e.preventDefault();
-        }
-
-        function handleDragEnd(e) {
-            e.target.classList.remove('dragging');
-            
-            // Update order in Firebase
-            const dayIndex = e.target.dataset.dayIndex;
-            const container = document.getElementById(`events-day-${dayIndex}`);
-            const events = Array.from(container.querySelectorAll('.event-item'));
-            
-            events.forEach((event, index) => {
-                const eventId = event.dataset.eventId;
-                update(ref(database, `trips/${currentTripId}/days/day${dayIndex}/events/${eventId}`), {
-                    order: index
-                });
-            });
-        }
-
-        function getDragAfterElement(container, y) {
-            const draggableElements = [...container.querySelectorAll('.event-item:not(.dragging)')];
-            
-            return draggableElements.reduce((closest, child) => {
-                const box = child.getBoundingClientRect();
-                const offset = y - box.top - box.height / 2;
-                
-                if (offset < 0 && offset > closest.offset) {
-                    return { offset: offset, element: child };
-                } else {
-                    return closest;
-                }
-            }, { offset: Number.NEGATIVE_INFINITY }).element;
-        }
-
-        // Packing list
-        function addPackingItem() {
-            const input = document.getElementById('packing-item-input');
-            const itemText = input.value.trim();
-            
-            if (itemText) {
-                const itemId = push(ref(database, `trips/${currentTripId}/packingList`)).key;
-                set(ref(database, `trips/${currentTripId}/packingList/${itemId}`), {
-                    text: itemText,
-                    checked: false,
-                    timestamp: Date.now()
-                });
-                input.value = '';
-            }
-        }
-
-        function togglePackingItem(itemId, checked) {
-            if (isUpdatingFromFirebase) return;
-            update(ref(database, `trips/${currentTripId}/packingList/${itemId}`), { checked: checked });
-        }
-
-        function deletePackingItem(itemId) {
-            remove(ref(database, `trips/${currentTripId}/packingList/${itemId}`));
-        }
-
-        function renderPackingItem(itemId, itemData) {
-            const list = document.getElementById('packing-list');
-            
-            let itemLi = document.getElementById(`packing-${itemId}`);
-            if (!itemLi) {
-                itemLi = document.createElement('li');
-                itemLi.className = 'packing-item';
-                itemLi.id = `packing-${itemId}`;
-                list.appendChild(itemLi);
-            }
-            
-            if (itemData.checked) {
-                itemLi.classList.add('checked');
-            } else {
-                itemLi.classList.remove('checked');
-            }
-            
-            itemLi.innerHTML = `
-                <label>
-                    <input type="checkbox" ${itemData.checked ? 'checked' : ''} onchange="togglePackingItem('${itemId}', this.checked)">
-                    <span>${itemData.text}</span>
-                </label>
-                <button class="delete-packing" onclick="deletePackingItem('${itemId}')">🗑️</button>
-            `;
-        }
-
-        // Settings
-        function openSettings() {
-            document.getElementById('settings-modal').style.display = 'flex';
-        }
-
-        function closeSettings() {
-            document.getElementById('settings-modal').style.display = 'none';
-        }
-
-        function changeTheme(theme) {
-            document.body.className = theme;
-            
-            // Update active button
-            document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            // Save to Firebase
-            if (currentTripId) {
-                set(ref(database, `trips/${currentTripId}/settings/theme`), theme);
-            }
-        }
-
-        // Time Picker
-        let currentTimePickerDayIndex = null;
-        let currentTimePickerEventId = null;
-        let selectedHour = 9;
-        let selectedMinute = 0;
-        let selectedAMPM = 'AM';
-
-        function openTimePicker(dayIndex, eventId, currentTime) {
-            currentTimePickerDayIndex = dayIndex;
-            currentTimePickerEventId = eventId;
-            
-            // Parse current time (24hr format)
-            const [hours, minutes] = currentTime.split(':');
-            const hour24 = parseInt(hours);
-            selectedMinute = parseInt(minutes);
-            selectedAMPM = hour24 >= 12 ? 'PM' : 'AM';
-            selectedHour = hour24 === 0 ? 12 : (hour24 > 12 ? hour24 - 12 : hour24);
-            
-            initializeTimeWheels();
-            document.getElementById('time-picker-modal').style.display = 'flex';
-            document.body.classList.add('modal-open');
-        }
-
-        function closeTimePicker() {
-            document.getElementById('time-picker-modal').style.display = 'none';
-            document.body.classList.remove('modal-open');
-        }
-
-        function confirmTime() {
-            // Convert to 24hr format
-            let hour24 = selectedHour;
-            if (selectedAMPM === 'PM' && selectedHour !== 12) {
-                hour24 = selectedHour + 12;
-            } else if (selectedAMPM === 'AM' && selectedHour === 12) {
-                hour24 = 0;
-            }
-            
-            const timeString = `${hour24.toString().padStart(2, '0')}:${selectedMinute.toString().padStart(2, '0')}`;
-            updateEvent(currentTimePickerDayIndex, currentTimePickerEventId, 'time', timeString);
-            closeTimePicker();
-        }
-
-        function initializeTimeWheels() {
-            // Hours (1-12)
-            const hourScroll = document.getElementById('hour-scroll');
-            hourScroll.innerHTML = '';
-            for (let i = 1; i <= 12; i++) {
-                const item = document.createElement('div');
-                item.className = 'time-wheel-item';
-                item.textContent = i;
-                item.onclick = () => selectHour(i);
-                hourScroll.appendChild(item);
-            }
-            
-            // Minutes (00-59)
-            const minuteScroll = document.getElementById('minute-scroll');
-            minuteScroll.innerHTML = '';
-            for (let i = 0; i < 60; i++) {
-                const item = document.createElement('div');
-                item.className = 'time-wheel-item';
-                item.textContent = i.toString().padStart(2, '0');
-                item.onclick = () => selectMinute(i);
-                minuteScroll.appendChild(item);
-            }
-            
-            // AM/PM
-            const ampmScroll = document.getElementById('ampm-scroll');
-            ampmScroll.innerHTML = '';
-            ['AM', 'PM'].forEach(period => {
-                const item = document.createElement('div');
-                item.className = 'time-wheel-item';
-                item.textContent = period;
-                item.onclick = () => selectAMPM(period);
-                ampmScroll.appendChild(item);
-            });
-            
-            // Set initial positions
-            updateWheelPosition('hour', selectedHour - 1);
-            updateWheelPosition('minute', selectedMinute);
-            updateWheelPosition('ampm', selectedAMPM === 'AM' ? 0 : 1);
-            
-            // Add scroll listeners
-            addWheelScrollListener('hour-wheel', 'hour-scroll', 12, (index) => {
-                selectedHour = index + 1;
-                updateSelectedItem('hour-scroll', index);
-            });
-            
-            addWheelScrollListener('minute-wheel', 'minute-scroll', 60, (index) => {
-                selectedMinute = index;
-                updateSelectedItem('minute-scroll', index);
-            });
-            
-            addWheelScrollListener('ampm-wheel', 'ampm-scroll', 2, (index) => {
-                selectedAMPM = index === 0 ? 'AM' : 'PM';
-                updateSelectedItem('ampm-scroll', index);
-            });
-        }
-
-        function selectHour(hour) {
-            selectedHour = hour;
-            updateWheelPosition('hour', hour - 1);
-        }
-
-        function selectMinute(minute) {
-            selectedMinute = minute;
-            updateWheelPosition('minute', minute);
-        }
-
-        function selectAMPM(period) {
-            selectedAMPM = period;
-            updateWheelPosition('ampm', period === 'AM' ? 0 : 1);
-        }
-
-        function updateWheelPosition(type, index) {
-            const scrollElement = document.getElementById(`${type}-scroll`);
-            const itemHeight = window.innerWidth <= 768 ? 35 : 40; // Mobile vs desktop height
-            const offset = -index * itemHeight;
-            scrollElement.style.transform = `translateY(calc(-50% + ${offset}px))`;
-            updateSelectedItem(`${type}-scroll`, index);
-        }
-
-        function updateSelectedItem(scrollId, selectedIndex) {
-            const scroll = document.getElementById(scrollId);
-            const items = scroll.querySelectorAll('.time-wheel-item');
-            items.forEach((item, index) => {
-                if (index === selectedIndex) {
-                    item.classList.add('selected');
-                } else {
-                    item.classList.remove('selected');
-                }
-            });
-        }
-
-        function addWheelScrollListener(wheelId, scrollId, itemCount, onScroll) {
-            const wheel = document.getElementById(wheelId);
-            const scroll = document.getElementById(scrollId);
-            const itemHeight = window.innerWidth <= 768 ? 35 : 40; // Mobile vs desktop height
-            
-            let startY = 0;
-            let currentY = 0;
-            let isDragging = false;
-            let currentIndex = 0;
-            let velocity = 0;
-            let lastY = 0;
-            let lastTime = Date.now();
-            
-            wheel.addEventListener('mousedown', startDrag);
-            wheel.addEventListener('touchstart', startDrag);
-            
-            function startDrag(e) {
-                isDragging = true;
-                startY = e.type === 'mousedown' ? e.clientY : e.touches[0].clientY;
-                currentY = startY;
-                lastY = startY;
-                lastTime = Date.now();
-                velocity = 0;
-                
-                const transform = scroll.style.transform;
-                const match = transform.match(/translateY\(calc\(-50% \+ (-?\d+)px\)\)/);
-                if (match) {
-                    currentIndex = Math.round(-parseInt(match[1]) / itemHeight);
-                }
-                
-                document.addEventListener('mousemove', drag);
-                document.addEventListener('touchmove', drag, { passive: false });
-                document.addEventListener('mouseup', endDrag);
-                document.addEventListener('touchend', endDrag);
-            }
-            
-            function drag(e) {
-                if (!isDragging) return;
-                e.preventDefault();
-                e.stopPropagation();
-                
-                const y = e.type === 'mousemove' ? e.clientY : e.touches[0].clientY;
-                const deltaY = y - currentY;
-                currentY = y;
-                
-                const now = Date.now();
-                const deltaTime = now - lastTime;
-                if (deltaTime > 0) {
-                    velocity = (y - lastY) / deltaTime;
-                }
-                lastY = y;
-                lastTime = now;
-                
-                const totalDelta = currentY - startY;
-                const newIndex = Math.round((currentIndex * itemHeight - totalDelta) / itemHeight);
-                const clampedIndex = Math.max(0, Math.min(itemCount - 1, newIndex));
-                
-                const offset = -(clampedIndex * itemHeight) - (totalDelta - (currentIndex * itemHeight - clampedIndex * itemHeight));
-                scroll.style.transform = `translateY(calc(-50% + ${offset}px))`;
-            }
-            
-            function endDrag() {
-                if (!isDragging) return;
-                isDragging = false;
-                
-                document.removeEventListener('mousemove', drag);
-                document.removeEventListener('touchmove', drag);
-                document.removeEventListener('mouseup', endDrag);
-                document.removeEventListener('touchend', endDrag);
-                
-                // Apply momentum
-                const totalDelta = currentY - startY;
-                let newIndex = Math.round((currentIndex * itemHeight - totalDelta - velocity * 100) / itemHeight);
-                newIndex = Math.max(0, Math.min(itemCount - 1, newIndex));
-                
-                updateWheelPosition(scrollId.replace('-scroll', ''), newIndex);
-                onScroll(newIndex);
-            }
-        }
-
-        // Firebase listeners
-        function setupListeners() {
-            // Trip name
-            document.getElementById('trip-name').addEventListener('input', function(e) {
-                if (!isUpdatingFromFirebase && currentTripId) {
-                    set(ref(database, `trips/${currentTripId}/name`), e.target.value);
-                }
-            });
-
-            // General notes
-            document.getElementById('general-notes').addEventListener('input', function(e) {
-                if (!isUpdatingFromFirebase && currentTripId) {
-                    set(ref(database, `trips/${currentTripId}/generalNotes`), e.target.value);
-                }
-            });
-        }
-
-        // Setup listeners for specific trip
-        function setupTripListeners(tripId) {
-            // Events for all days
-            for (let i = 0; i < 30; i++) {
-                onValue(ref(database, `trips/${tripId}/days/day${i}/events`), (snapshot) => {
-                    const container = document.getElementById(`events-day-${i}`);
-                    if (!container) return;
+                    
+                    tripsList.innerHTML = '';
                     
                     if (snapshot.exists()) {
-                        isUpdatingFromFirebase = true;
-                        const events = snapshot.val();
-                        const sortedEvents = Object.entries(events).sort((a, b) => (a[1].order || 0) - (b[1].order || 0));
+                        const trips = snapshot.val();
+                        const sortedTrips = Object.entries(trips).sort((a, b) => (b[1].created || 0) - (a[1].created || 0));
                         
-                        // Clear container
-                        container.innerHTML = '';
-                        
-                        // Render each event
-                        sortedEvents.forEach(([eventId, eventData]) => {
-                            renderEvent(i, eventId, eventData);
-                        });
-                        
-                        isUpdatingFromFirebase = false;
-                    } else {
-                        container.innerHTML = '';
-                    }
-                });
-            }
-
-            // General notes - load once
-            onValue(ref(database, `trips/${tripId}/generalNotes`), (snapshot) => {
-                if (snapshot.exists()) {
-                    document.getElementById('general-notes').value = snapshot.val();
-                }
-            }, { onlyOnce: true });
-
-            // Packing list
-            onValue(ref(database, `trips/${tripId}/packingList`), (snapshot) => {
-                const list = document.getElementById('packing-list');
-                list.innerHTML = '';
-                
-                if (snapshot.exists()) {
-                    isUpdatingFromFirebase = true;
-                    const items = snapshot.val();
-                    const sortedItems = Object.entries(items).sort((a, b) => (a[1].timestamp || 0) - (b[1].timestamp || 0));
-                    
-                    sortedItems.forEach(([itemId, itemData]) => {
-                        renderPackingItem(itemId, itemData);
-                    });
-                    
-                    isUpdatingFromFirebase = false;
-                }
-            });
-
-            // Theme
-            onValue(ref(database, `trips/${tripId}/settings/theme`), (snapshot) => {
-                if (snapshot.exists()) {
-                    const theme = snapshot.val();
-                    document.body.className = theme;
-                }
-            }, { onlyOnce: true });
-        }
-
-        // Allow Enter key for packing list
-        document.getElementById('packing-item-input')?.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                addPackingItem();
-            }
-        });
-
-        // Allow Enter key for new trip name
-        document.getElementById('new-trip-name')?.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                createNewTrip();
-            }
-        });
-    </script>
-</body>
-</html><!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trip Planner</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-            transition: background 0.3s ease;
-        }
-
-        body.modal-open {
-            overflow: hidden;
-            position: fixed;
-            width: 100%;
-        }
-
-        /* Tropical Theme */
-        body.tropical {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        }
-
-        body.ocean {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        }
-
-        body.sunset {
-            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-        }
-
-        body.forest {
-            background: linear-gradient(135deg, #0ba360 0%, #3cba92 100%);
-        }
-
-        /* Auth Screen */
-        #auth-screen {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 9999;
-        }
-
-        .password-container {
-            background: white;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
-        }
-
-        .password-container h1 {
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        .password-container p {
-            color: #666;
-            margin-bottom: 30px;
-        }
-
-        .password-container input {
-            width: 100%;
-            padding: 15px;
-            font-size: 16px;
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            margin-bottom: 15px;
-        }
-
-        .password-container input[type="text"] {
-            margin-bottom: 15px;
-        }
-
-        .password-field-wrapper {
-            position: relative;
-            width: 100%;
-            margin-bottom: 15px;
-        }
-
-        .password-field-wrapper input {
-            width: 100%;
-            padding: 15px 45px 15px 15px;
-            font-size: 16px;
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            margin-bottom: 0;
-            background: white;
-        }
-
-        .password-field-wrapper input:focus {
-            outline: none;
-            border-color: #667eea;
-            background: white;
-        }
-
-        .password-toggle {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: transparent !important;
-            border: none;
-            cursor: pointer;
-            padding: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-            width: auto !important;
-            margin: 0 !important;
-        }
-
-        .password-toggle svg {
-            width: 22px;
-            height: 22px;
-            fill: #999;
-            transition: fill 0.2s;
-        }
-
-        .password-toggle:hover svg {
-            fill: #667eea;
-        }
-
-        .password-toggle:hover {
-            transform: translateY(-50%) !important;
-            box-shadow: none !important;
-        }
-
-        .password-container input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .password-container button:not(.password-toggle) {
-            width: 100%;
-            padding: 15px;
-            font-size: 16px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: bold;
-            margin-top: 10px;
-            transition: transform 0.2s;
-        }
-
-        .password-container button:not(.password-toggle):hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-        }
-
-        .error {
-            color: #f5576c;
-            margin-top: 15px;
-            display: none;
-            font-size: 14px;
-        }
-
-        /* Trip Cards */
-        .trip-card {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .trip-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 25px rgba(0,0,0,0.15);
-        }
-
-        .trip-card-info h3 {
-            font-size: 22px;
-            color: #333;
-            margin-bottom: 8px;
-        }
-
-        .trip-card-info p {
-            color: #666;
-            font-size: 14px;
-        }
-
-        .trip-card-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .trip-delete-btn {
-            background: #f5576c;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .trip-delete-btn:hover {
-            background: #e04556;
-        }
-
-        /* Calendar Modal */
-        #calendar-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.7);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .calendar-container {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            max-width: 500px;
-            width: 100%;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-        }
-
-        .calendar-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            gap: 10px;
-        }
-
-        .calendar-header h2 {
-            color: #333;
-            font-size: 18px;
-            flex: 1;
-            text-align: center;
-        }
-
-        .calendar-nav {
-            display: flex;
-            gap: 10px;
-        }
-
-        .calendar-nav button {
-            padding: 8px 15px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        .calendar-nav button:hover {
-            background: #5568d3;
-        }
-
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 5px;
-            margin-bottom: 20px;
-        }
-
-        .calendar-day-header {
-            text-align: center;
-            font-weight: bold;
-            padding: 10px;
-            color: #666;
-            font-size: 14px;
-        }
-
-        .calendar-day {
-            aspect-ratio: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            background: #f5f5f5;
-            transition: all 0.2s;
-        }
-
-        .calendar-day:hover {
-            background: #e0e0e0;
-        }
-
-        .calendar-day.disabled {
-            color: #ccc;
-            cursor: not-allowed;
-        }
-
-        .calendar-day.disabled:hover {
-            background: #f5f5f5;
-        }
-
-        .calendar-day.selected {
-            background: #667eea;
-            color: white;
-            font-weight: bold;
-        }
-
-        .calendar-day.in-range {
-            background: #b8c5f2;
-            color: #333;
-        }
-
-        .calendar-instructions {
-            text-align: center;
-            color: #666;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
-
-        .calendar-selected-dates {
-            background: #f0f0f0;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .calendar-selected-dates p {
-            margin: 5px 0;
-            color: #333;
-            font-size: 14px;
-            word-break: break-word;
-        }
-
-        .calendar-confirm {
-            width: 100%;
-            padding: 15px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .calendar-confirm:hover {
-            background: #5568d3;
-        }
-
-        .calendar-confirm:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-
-        /* Main Container */
-        #main-app {
-            display: none;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        /* Settings Button */
-        .settings-btn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            background: white;
-            border-radius: 50%;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            z-index: 100;
-            transition: transform 0.2s;
-        }
-
-        .settings-btn:hover {
-            transform: rotate(90deg);
-        }
-
-        .settings-btn svg {
-            width: 24px;
-            height: 24px;
-            fill: #333;
-        }
-
-        /* Settings Modal */
-        #settings-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.7);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .settings-container {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            max-width: 400px;
-            width: 100%;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-        }
-
-        .settings-container h2 {
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        .theme-options {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .theme-btn {
-            padding: 15px;
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.2s;
-        }
-
-        .theme-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
-        .theme-btn.active {
-            border-color: #667eea;
-            background: #f0f0f0;
-        }
-
-        .close-settings {
-            width: 100%;
-            padding: 12px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        /* Header */
-        .header {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
-
-        .trip-name-input {
-            width: 100%;
-            font-size: 28px;
-            font-weight: bold;
-            border: none;
-            border-bottom: 2px solid transparent;
-            padding: 10px;
-            text-align: center;
-            color: #333;
-            transition: border-color 0.2s;
-        }
-
-        .trip-name-input:focus {
-            outline: none;
-            border-bottom-color: #667eea;
-        }
-
-        .date-display {
-            text-align: center;
-            color: #666;
-            margin-top: 10px;
-            font-size: 16px;
-        }
-
-        /* Itinerary Section */
-        .itinerary-section {
-            margin-bottom: 30px;
-        }
-
-        .day-block {
-            background: white;
-            padding: 25px;
-            border-radius: 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-
-        .day-header {
-            font-size: 22px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #f0f0f0;
-        }
-
-        .events-list {
-            min-height: 50px;
-        }
-
-        .event-item {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 10px;
-            cursor: move;
-            transition: all 0.2s;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .event-item:hover {
-            background: #e9ecef;
-            transform: translateX(5px);
-        }
-
-        .event-item.dragging {
-            opacity: 0.5;
-        }
-
-        .event-content {
-            flex: 1;
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .event-time {
-            min-width: 80px;
-        }
-
-        .time-display {
-            width: 100%;
-            padding: 8px 12px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 14px;
-            cursor: pointer;
-            text-align: center;
-            background: white;
-            font-weight: 500;
-            color: #333;
-            transition: all 0.2s;
-        }
-
-        .time-display:hover {
-            border-color: #667eea;
-            background: #f8f9fa;
-        }
-
-        .event-time input {
-            width: 100%;
-            padding: 5px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-
-        .event-description {
-            flex: 1;
-        }
-
-        .event-description input {
-            width: 100%;
-            padding: 5px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-
-        .delete-event {
-            background: #f5576c;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .delete-event:hover {
-            background: #e04556;
-        }
-
-        .add-event-btn {
-            width: 100%;
-            padding: 12px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 10px;
-        }
-
-        .add-event-btn:hover {
-            background: #5568d3;
-        }
-
-        /* Notes and Packing List */
-        .section {
-            background: white;
-            padding: 25px;
-            border-radius: 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
-
-        .section h2 {
-            font-size: 22px;
-            color: #333;
-            margin-bottom: 15px;
-        }
-
-        .notes-textarea {
-            width: 100%;
-            min-height: 150px;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            font-size: 16px;
-            font-family: inherit;
-            resize: vertical;
-        }
-
-        .notes-textarea:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .packing-input {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .packing-input input {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 16px;
-        }
-
-        .packing-input button {
-            padding: 12px 20px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        .packing-list {
-            list-style: none;
-        }
-
-        .packing-item {
-            background: #f8f9fa;
-            padding: 12px 15px;
-            border-radius: 10px;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .packing-item label {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex: 1;
-            cursor: pointer;
-        }
-
-        .packing-item input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-        }
-
-        .packing-item.checked label {
-            text-decoration: line-through;
-            color: #999;
-        }
-
-        .delete-packing {
-            background: #f5576c;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        /* Time Picker Modal */
-        #time-picker-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.7);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            overflow: hidden;
-            touch-action: none;
-        }
-
-        .time-picker-container {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            max-width: 400px;
-            width: 100%;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            touch-action: none;
-        }
-
-        .time-picker-container h3 {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        .time-picker-wheels {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            height: 200px;
-            margin-bottom: 20px;
-            position: relative;
-        }
-
-        .time-picker-wheels::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            right: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            height: 40px;
-            background: rgba(102, 126, 234, 0.1);
-            border-top: 2px solid #667eea;
-            border-bottom: 2px solid #667eea;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        .time-wheel {
-            width: 80px;
-            height: 200px;
-            overflow: hidden;
-            position: relative;
-            background: #f8f9fa;
-            border-radius: 10px;
-            touch-action: pan-y;
-            user-select: none;
-        }
-
-        .time-wheel.am-pm {
-            width: 100px;
-        }
-
-        .time-wheel-scroll {
-            position: absolute;
-            width: 100%;
-            top: 50%;
-            transform: translateY(-50%);
-            transition: transform 0.3s ease-out;
-        }
-
-        .time-wheel-item {
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            color: #999;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .time-wheel-item.selected {
-            color: #333;
-            font-weight: bold;
-            font-size: 24px;
-        }
-
-        .time-picker-buttons {
-            display: flex;
-            gap: 10px;
-        }
-
-        .time-picker-buttons button {
-            flex: 1;
-            padding: 15px;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .time-picker-cancel {
-            background: #e0e0e0;
-            color: #333;
-        }
-
-        .time-picker-cancel:hover {
-            background: #d0d0d0;
-        }
-
-        .time-picker-confirm {
-            background: #667eea;
-            color: white;
-        }
-
-        .time-picker-confirm:hover {
-            background: #5568d3;
-        }
-
-        /* Mobile Responsive */
-        @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-
-            .settings-btn {
-                top: 10px;
-                right: 10px;
-                width: 45px;
-                height: 45px;
-            }
-
-            .header {
-                padding: 20px;
-            }
-
-            .trip-name-input {
-                font-size: 22px;
-            }
-
-            .day-block, .section {
-                padding: 20px;
-            }
-
-            .event-content {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 10px;
-            }
-
-            .event-time {
-                min-width: 100%;
-            }
-
-            .event-item {
-                padding: 12px;
-                gap: 10px;
-            }
-
-            .delete-event {
-                padding: 8px 10px;
-                font-size: 12px;
-                min-width: 60px;
-            }
-
-            .calendar-container {
-                padding: 20px;
-                max-height: 90vh;
-                overflow-y: auto;
-            }
-
-            .calendar-header h2 {
-                font-size: 16px;
-            }
-
-            .calendar-header button {
-                padding: 6px 10px;
-                font-size: 12px;
-            }
-
-            .calendar-day {
-                font-size: 12px;
-            }
-
-            .calendar-selected-dates p {
-                font-size: 12px;
-            }
-
-            .packing-input {
-                flex-direction: column;
-            }
-
-            .packing-input button {
-                width: 100%;
-            }
-
-            .time-picker-container {
-                padding: 20px;
-                max-width: 90%;
-            }
-
-            .time-picker-container h3 {
-                font-size: 18px;
-            }
-
-            .time-wheel {
-                width: 60px;
-            }
-
-            .time-wheel.am-pm {
-                width: 70px;
-            }
-
-            .time-wheel-item {
-                font-size: 16px;
-                height: 35px;
-            }
-
-            .time-wheel-item.selected {
-                font-size: 20px;
-            }
-        }
-    </style>
-</head>
-<body class="tropical">
-    <!-- Auth Screen -->
-    <div id="auth-screen">
-        <!-- Login Screen -->
-        <div class="password-container" id="login-screen">
-            <h1>🌴 Trip Planner</h1>
-            <p id="auth-subtitle">Login to your trip</p>
-            <input type="text" id="auth-username" placeholder="Username">
-            
-            <div class="password-field-wrapper">
-                <input type="password" id="auth-password" placeholder="Password">
-                <button type="button" class="password-toggle" onclick="togglePasswordVisibility('auth-password')">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="eye-open">
-                        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
-                    </svg>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="eye-closed" style="display: none;">
-                        <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>
-                    </svg>
-                </button>
-            </div>
-            
-            <div class="password-field-wrapper" id="confirm-password-wrapper" style="display: none;">
-                <input type="password" id="auth-password-confirm" placeholder="Confirm password">
-                <button type="button" class="password-toggle" onclick="togglePasswordVisibility('auth-password-confirm')">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="eye-open">
-                        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
-                    </svg>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="eye-closed" style="display: none;">
-                        <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>
-                    </svg>
-                </button>
-            </div>
-            
-            <button id="auth-submit-btn" onclick="handleAuth()">Login</button>
-            <p class="error" id="auth-error"></p>
-            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e0e0e0;">
-                <p style="color: #666; font-size: 14px; margin-bottom: 10px;" id="switch-text">Don't have an account?</p>
-                <button style="background: transparent; color: #667eea; border: 2px solid #667eea;" onclick="toggleAuthMode()">
-                    <span id="switch-btn-text">Create New Account</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Trips Dashboard -->
-    <div id="trips-dashboard" style="display: none;">
-        <div style="max-width: 900px; margin: 0 auto;">
-            <!-- Dashboard Header -->
-            <div class="header" style="display: flex; justify-content: space-between; align-items: center;">
-                <h1 style="font-size: 32px; color: #333;">My Trips</h1>
-                <button class="settings-btn" onclick="openSettings()" style="position: relative; top: 0; right: 0;">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
-                    </svg>
-                </button>
-            </div>
-
-            <!-- Create New Trip Button -->
-            <div style="margin: 30px 0;">
-                <button onclick="showNewTripModal()" style="width: 100%; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 15px; font-size: 18px; font-weight: bold; cursor: pointer; transition: transform 0.2s;">
-                    + Create New Trip
-                </button>
-            </div>
-
-            <!-- Trips List -->
-            <div id="trips-list"></div>
-        </div>
-    </div>
-
-    <!-- New Trip Modal -->
-    <div id="new-trip-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 2000; justify-content: center; align-items: center; padding: 20px;">
-        <div style="background: white; padding: 40px; border-radius: 20px; max-width: 500px; width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
-            <h2 style="margin-bottom: 20px; color: #333;">Create New Trip</h2>
-            <input type="text" id="new-trip-name" placeholder="Enter trip name (e.g., Hawaii Vacation)" style="width: 100%; padding: 15px; font-size: 16px; border: 2px solid #ddd; border-radius: 10px; margin-bottom: 20px;">
-            <div style="display: flex; gap: 10px;">
-                <button onclick="closeNewTripModal()" style="flex: 1; padding: 15px; background: #e0e0e0; color: #333; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer;">Cancel</button>
-                <button onclick="createNewTrip()" style="flex: 1; padding: 15px; background: #667eea; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer;">Create</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Calendar Modal -->
-    <div id="calendar-modal">
-        <div class="calendar-container">
-            <div class="calendar-header">
-                <button onclick="cancelCalendar()" style="background: #e0e0e0; color: #333; padding: 8px 12px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px;">← Back</button>
-                <h2 id="calendar-month-year">January 2024</h2>
-                <div class="calendar-nav">
-                    <button onclick="previousMonth()">◀</button>
-                    <button onclick="nextMonth()">▶</button>
-                </div>
-            </div>
-            <p class="calendar-instructions">Select your trip start and end dates</p>
-            <div class="calendar-selected-dates">
-                <p><strong>Start:</strong> <span id="start-date-display">Not selected</span></p>
-                <p><strong>End:</strong> <span id="end-date-display">Not selected</span></p>
-            </div>
-            <div class="calendar-grid">
-                <div class="calendar-day-header">Sun</div>
-                <div class="calendar-day-header">Mon</div>
-                <div class="calendar-day-header">Tue</div>
-                <div class="calendar-day-header">Wed</div>
-                <div class="calendar-day-header">Thu</div>
-                <div class="calendar-day-header">Fri</div>
-                <div class="calendar-day-header">Sat</div>
-                <!-- Days will be populated by JavaScript -->
-            </div>
-            <button class="calendar-confirm" id="confirm-dates" onclick="confirmDates()" disabled>Confirm Dates</button>
-        </div>
-    </div>
-
-    <!-- Settings Modal -->
-    <div id="settings-modal">
-        <div class="settings-container">
-            <h2>⚙️ Settings</h2>
-            <h3 style="margin-bottom: 10px; color: #666; font-size: 16px;">Choose Theme:</h3>
-            <div class="theme-options">
-                <div class="theme-btn active" onclick="changeTheme('tropical')">
-                    🌺 Tropical
-                </div>
-                <div class="theme-btn" onclick="changeTheme('ocean')">
-                    🌊 Ocean
-                </div>
-                <div class="theme-btn" onclick="changeTheme('sunset')">
-                    🌅 Sunset
-                </div>
-                <div class="theme-btn" onclick="changeTheme('forest')">
-                    🌲 Forest
-                </div>
-            </div>
-            <button class="close-settings" onclick="closeSettings()">Close</button>
-            <button class="close-settings" onclick="logout()" style="background: #f5576c; margin-top: 10px;">Logout</button>
-        </div>
-    </div>
-
-    <!-- Time Picker Modal -->
-    <div id="time-picker-modal">
-        <div class="time-picker-container">
-            <h3>Select Time</h3>
-            <div class="time-picker-wheels">
-                <div class="time-wheel" id="hour-wheel">
-                    <div class="time-wheel-scroll" id="hour-scroll"></div>
-                </div>
-                <div style="display: flex; align-items: center; font-size: 24px; font-weight: bold; color: #333;">:</div>
-                <div class="time-wheel" id="minute-wheel">
-                    <div class="time-wheel-scroll" id="minute-scroll"></div>
-                </div>
-                <div class="time-wheel am-pm" id="ampm-wheel">
-                    <div class="time-wheel-scroll" id="ampm-scroll"></div>
-                </div>
-            </div>
-            <div class="time-picker-buttons">
-                <button class="time-picker-cancel" onclick="closeTimePicker()">Cancel</button>
-                <button class="time-picker-confirm" onclick="confirmTime()">Done</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main App -->
-    <div id="main-app">
-        <!-- Settings Button -->
-        <div class="settings-btn" onclick="openSettings()">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
-            </svg>
-        </div>
-
-        <!-- Back Button -->
-        <div class="settings-btn" onclick="backToDashboard()" style="left: 20px; right: auto;">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
-            </svg>
-        </div>
-
-        <!-- Header -->
-        <div class="header">
-            <input type="text" class="trip-name-input" id="trip-name" placeholder="Enter Trip Name">
-            <div class="date-display" id="date-display"></div>
-            <button onclick="editDates()" style="width: 100%; padding: 12px; background: #667eea; color: white; border: none; border-radius: 10px; margin-top: 10px; cursor: pointer; font-size: 14px;">
-                Edit Dates
-            </button>
-        </div>
-
-        <!-- Itinerary Section -->
-        <div class="itinerary-section" id="itinerary-section">
-            <!-- Day blocks will be dynamically added here -->
-        </div>
-
-        <!-- General Notes -->
-        <div class="section">
-            <h2>📝 General Notes</h2>
-            <textarea class="notes-textarea" id="general-notes" placeholder="Add general notes about your trip..."></textarea>
-        </div>
-
-        <!-- Packing List -->
-        <div class="section">
-            <h2>🎒 Packing List</h2>
-            <div class="packing-input">
-                <input type="text" id="packing-item-input" placeholder="Add item to pack...">
-                <button onclick="addPackingItem()">Add</button>
-            </div>
-            <ul class="packing-list" id="packing-list"></ul>
-        </div>
-    </div>
-
-    <!-- Firebase -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set, onValue, push, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyA4eZWeo1El9pEc3a7RtEfHVnIRDV3gk1A",
-            authDomain: "trip-planner-61363.firebaseapp.com",
-            databaseURL: "https://trip-planner-61363-default-rtdb.firebaseio.com",
-            projectId: "trip-planner-61363",
-            storageBucket: "trip-planner-61363.firebasestorage.app",
-            messagingSenderId: "44247340364",
-            appId: "1:44247340364:web:324eefb5048a579c766be9"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-
-        // Make Firebase available globally
-        window.database = database;
-        window.ref = ref;
-        window.set = set;
-        window.onValue = onValue;
-        window.push = push;
-        window.remove = remove;
-        window.update = update;
-
-        // Listen for changes
-        setupListeners();
-    </script>
-
-    <script>
-        // Global variables
-        let currentMonth = new Date().getMonth();
-        let currentYear = new Date().getFullYear();
-        let startDate = null;
-        let endDate = null;
-        let isAuthenticated = false;
-        let isUpdatingFromFirebase = false;
-        let isSignupMode = false;
-        let currentTripId = null;
-
-        // Check if account exists on page load
-        window.addEventListener('DOMContentLoaded', () => {
-            // Just show the login screen, user can toggle to signup if needed
-            document.getElementById('login-screen').style.display = 'block';
-        });
-
-        // Toggle between login and signup
-        function toggleAuthMode() {
-            isSignupMode = !isSignupMode;
-            const subtitle = document.getElementById('auth-subtitle');
-            const confirmWrapper = document.getElementById('confirm-password-wrapper');
-            const submitBtn = document.getElementById('auth-submit-btn');
-            const switchText = document.getElementById('switch-text');
-            const switchBtnText = document.getElementById('switch-btn-text');
-            const errorElement = document.getElementById('auth-error');
-            
-            errorElement.style.display = 'none';
-            
-            if (isSignupMode) {
-                subtitle.textContent = 'Create your trip account';
-                confirmWrapper.style.display = 'block';
-                submitBtn.textContent = 'Create Account';
-                switchText.textContent = 'Already have an account?';
-                switchBtnText.textContent = 'Login Instead';
-            } else {
-                subtitle.textContent = 'Login to your trip';
-                confirmWrapper.style.display = 'none';
-                submitBtn.textContent = 'Login';
-                switchText.textContent = "Don't have an account?";
-                switchBtnText.textContent = 'Create New Account';
-            }
-        }
-
-        // Toggle password visibility
-        function togglePasswordVisibility(inputId) {
-            const input = document.getElementById(inputId);
-            const button = event.currentTarget;
-            const eyeOpen = button.querySelector('.eye-open');
-            const eyeClosed = button.querySelector('.eye-closed');
-            
-            if (input.type === 'password') {
-                input.type = 'text';
-                eyeOpen.style.display = 'none';
-                eyeClosed.style.display = 'block';
-            } else {
-                input.type = 'password';
-                eyeOpen.style.display = 'block';
-                eyeClosed.style.display = 'none';
-            }
-        }
-
-        // Handle both login and signup
-        function handleAuth() {
-            if (isSignupMode) {
-                createAccount();
-            } else {
-                login();
-            }
-        }
-
-        // Create account (signup)
-        function createAccount() {
-            const username = document.getElementById('auth-username').value.trim();
-            const password = document.getElementById('auth-password').value;
-            const confirmPassword = document.getElementById('auth-password-confirm').value;
-            const errorElement = document.getElementById('auth-error');
-
-            // Clear previous error
-            errorElement.style.display = 'none';
-
-            // Validation
-            if (!username) {
-                errorElement.textContent = 'Please enter a username';
-                errorElement.style.display = 'block';
-                return;
-            }
-
-            if (username.length < 3) {
-                errorElement.textContent = 'Username must be at least 3 characters';
-                errorElement.style.display = 'block';
-                return;
-            }
-
-            if (!password) {
-                errorElement.textContent = 'Please enter a password';
-                errorElement.style.display = 'block';
-                return;
-            }
-
-            if (password.length < 4) {
-                errorElement.textContent = 'Password must be at least 4 characters';
-                errorElement.style.display = 'block';
-                return;
-            }
-
-            if (password !== confirmPassword) {
-                errorElement.textContent = 'Passwords do not match';
-                errorElement.style.display = 'block';
-                return;
-            }
-
-            // Check if account already exists
-            const credRef = ref(database, 'credentials');
-            const unsubscribe = onValue(credRef, (snapshot) => {
-                if (snapshot.exists()) {
-                    errorElement.textContent = 'An account already exists. Please login instead.';
-                    errorElement.style.display = 'block';
-                } else {
-                    // Save credentials to Firebase
-                    set(credRef, {
-                        username: username,
-                        password: password
-                    }).then(() => {
-                        isAuthenticated = true;
-                        document.getElementById('auth-screen').style.display = 'none';
-                        document.getElementById('trips-dashboard').style.display = 'block';
-                        loadTrips();
-                    }).catch((error) => {
-                        errorElement.textContent = 'Error creating account. Please try again.';
-                        errorElement.style.display = 'block';
-                    });
-                }
-            }, {
-                onlyOnce: true
-            }, (error) => {
-                errorElement.textContent = 'Error checking account. Please try again.';
-                errorElement.style.display = 'block';
-            });
-        }
-
-        // Login
-        function login() {
-            const username = document.getElementById('auth-username').value.trim();
-            const password = document.getElementById('auth-password').value;
-            const errorElement = document.getElementById('auth-error');
-
-            // Clear previous error
-            errorElement.style.display = 'none';
-
-            if (!username || !password) {
-                errorElement.textContent = 'Please enter username and password';
-                errorElement.style.display = 'block';
-                return;
-            }
-
-            // Get credentials from Firebase - use get instead of onValue for one-time read
-            const credRef = ref(database, 'credentials');
-            
-            // Use onValue with onlyOnce option for proper async handling
-            const unsubscribe = onValue(credRef, (snapshot) => {
-                if (snapshot.exists()) {
-                    const credentials = snapshot.val();
-                    
-                    if (username === credentials.username && password === credentials.password) {
-                        isAuthenticated = true;
-                        document.getElementById('auth-screen').style.display = 'none';
-                        document.getElementById('trips-dashboard').style.display = 'block';
-                        loadTrips();
-                    } else {
-                        errorElement.textContent = 'Invalid username or password';
-                        errorElement.style.display = 'block';
-                    }
-                } else {
-                    errorElement.textContent = 'No account exists. Please create an account first.';
-                    errorElement.style.display = 'block';
-                }
-            }, {
-                onlyOnce: true
-            }, (error) => {
-                errorElement.textContent = 'Error accessing account. Please try again.';
-                errorElement.style.display = 'block';
-            });
-        }
-
-        // Logout function
-        function logout() {
-            isAuthenticated = false;
-            closeSettings();
-            document.getElementById('main-app').style.display = 'none';
-            document.getElementById('calendar-modal').style.display = 'none';
-            document.getElementById('trips-dashboard').style.display = 'none';
-            document.getElementById('auth-screen').style.display = 'flex';
-            document.getElementById('login-screen').style.display = 'block';
-            
-            // Clear form
-            document.getElementById('auth-username').value = '';
-            document.getElementById('auth-password').value = '';
-            document.getElementById('auth-password-confirm').value = '';
-            document.getElementById('auth-error').style.display = 'none';
-            
-            // Reset to login mode
-            if (isSignupMode) {
-                toggleAuthMode();
-            }
-            
-            currentTripId = null;
-        }
-
-        // Trip Management Functions
-        function showNewTripModal() {
-            document.getElementById('new-trip-modal').style.display = 'flex';
-            document.getElementById('new-trip-name').value = '';
-        }
-
-        function closeNewTripModal() {
-            document.getElementById('new-trip-modal').style.display = 'none';
-        }
-
-        function createNewTrip() {
-            const tripName = document.getElementById('new-trip-name').value.trim();
-            
-            if (!tripName) {
-                alert('Please enter a trip name');
-                return;
-            }
-            
-            const tripId = push(ref(database, 'trips')).key;
-            const newTrip = {
-                name: tripName,
-                created: Date.now()
-            };
-            
-            set(ref(database, `trips/${tripId}`), newTrip).then(() => {
-                closeNewTripModal();
-                openTrip(tripId);
-            });
-        }
-
-        function loadTrips() {
-            onValue(ref(database, 'trips'), (snapshot) => {
-                const tripsList = document.getElementById('trips-list');
-                tripsList.innerHTML = '';
-                
-                if (snapshot.exists()) {
-                    const trips = snapshot.val();
-                    const sortedTrips = Object.entries(trips).sort((a, b) => (b[1].created || 0) - (a[1].created || 0));
-                    
-                    sortedTrips.forEach(([tripId, tripData]) => {
-                        const tripCard = document.createElement('div');
-                        tripCard.className = 'trip-card';
-                        
-                        let dateText = 'No dates set';
-                        if (tripData.dates) {
-                            const start = new Date(tripData.dates.start).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                            const end = new Date(tripData.dates.end).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                            dateText = `${start} - ${end}`;
-                        }
-                        
-                        tripCard.innerHTML = `
-                            <div class="trip-card-info" onclick="openTrip('${tripId}')">
+                        sortedTrips.forEach(([tripId, tripData]) => {
+                            const tripCard = document.createElement('div');
+                            tripCard.className = 'trip-card';
+                            
+                            let dateText = 'No dates set';
+                            if (tripData.dates) {
+                                const start = new Date(tripData.dates.start).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                                const end = new Date(tripData.dates.end).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                                dateText = `${start} - ${end}`;
+                            }
+                            
+                            // Create card structure
+                            const cardInfo = document.createElement('div');
+                            cardInfo.className = 'trip-card-info';
+                            cardInfo.innerHTML = `
                                 <h3>${tripData.name || 'Untitled Trip'}</h3>
                                 <p>${dateText}</p>
-                            </div>
-                            <div class="trip-card-actions">
-                                <button class="trip-delete-btn" onclick="event.stopPropagation(); deleteTrip('${tripId}')">Delete</button>
-                            </div>
-                        `;
-                        
-                        tripsList.appendChild(tripCard);
-                    });
-                } else {
-                    tripsList.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">No trips yet. Create your first trip!</p>';
-                }
-            });
+                            `;
+                            
+                            // Add click handler
+                            cardInfo.addEventListener('click', () => {
+                                openTrip(tripId);
+                            });
+                            
+                            // Create delete button
+                            const cardActions = document.createElement('div');
+                            cardActions.className = 'trip-card-actions';
+                            
+                            const deleteBtn = document.createElement('button');
+                            deleteBtn.className = 'trip-delete-btn';
+                            deleteBtn.textContent = 'Delete';
+                            deleteBtn.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                deleteTrip(tripId);
+                            });
+                            
+                            cardActions.appendChild(deleteBtn);
+                            
+                            // Assemble card
+                            tripCard.appendChild(cardInfo);
+                            tripCard.appendChild(cardActions);
+                            
+                            tripsList.appendChild(tripCard);
+                        });
+                    } else {
+                        tripsList.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">No trips yet. Create your first trip!</p>';
+                    }
+                }, (error) => {
+                    console.error('Error loading trips:', error);
+                });
+            } catch (error) {
+                console.error('Error in loadTrips:', error);
+            }
         }
 
         function openTrip(tripId) {
+            console.log('Opening trip:', tripId);
             currentTripId = tripId;
             
             // Load trip data
             onValue(ref(database, `trips/${tripId}`), (snapshot) => {
+                console.log('Trip data loaded:', snapshot.exists());
                 if (snapshot.exists()) {
                     const tripData = snapshot.val();
+                    console.log('Trip data:', tripData);
                     
                     if (tripData.dates) {
                         startDate = new Date(tripData.dates.start);
@@ -3724,11 +1599,14 @@
                         document.getElementById('date-display').textContent = 
                             `${startDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} - ${endDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
                     } else {
+                        console.log('No dates set, showing calendar');
                         // No dates set, show calendar
                         document.getElementById('trips-dashboard').style.display = 'none';
                         document.getElementById('calendar-modal').style.display = 'flex';
                         renderCalendar();
                     }
+                } else {
+                    console.error('Trip not found');
                 }
             }, { onlyOnce: true });
         }
@@ -4191,7 +2069,7 @@
             // AM/PM
             const ampmScroll = document.getElementById('ampm-scroll');
             ampmScroll.innerHTML = '';
-            ['AM', 'PM'].forEach(period => {
+            ['AM', 'PM'].forEach((period, index) => {
                 const item = document.createElement('div');
                 item.className = 'time-wheel-item';
                 item.textContent = period;
@@ -4199,26 +2077,36 @@
                 ampmScroll.appendChild(item);
             });
             
-            // Set initial positions
-            updateWheelPosition('hour', selectedHour - 1);
-            updateWheelPosition('minute', selectedMinute);
-            updateWheelPosition('ampm', selectedAMPM === 'AM' ? 0 : 1);
+            console.log('AM/PM items created:', ampmScroll.children.length);
             
-            // Add scroll listeners
-            addWheelScrollListener('hour-wheel', 'hour-scroll', 12, (index) => {
-                selectedHour = index + 1;
-                updateSelectedItem('hour-scroll', index);
-            });
-            
-            addWheelScrollListener('minute-wheel', 'minute-scroll', 60, (index) => {
-                selectedMinute = index;
-                updateSelectedItem('minute-scroll', index);
-            });
-            
-            addWheelScrollListener('ampm-wheel', 'ampm-scroll', 2, (index) => {
-                selectedAMPM = index === 0 ? 'AM' : 'PM';
-                updateSelectedItem('ampm-scroll', index);
-            });
+            // Set initial positions with a small delay to ensure DOM is ready
+            setTimeout(() => {
+                const hourIndex = selectedHour - 1;
+                const minuteIndex = selectedMinute;
+                const ampmIndex = selectedAMPM === 'AM' ? 0 : 1;
+                
+                console.log('Initial positions - Hour:', hourIndex, 'Minute:', minuteIndex, 'AMPM:', ampmIndex);
+                
+                updateWheelPosition('hour', hourIndex);
+                updateWheelPosition('minute', minuteIndex);
+                updateWheelPosition('ampm', ampmIndex);
+                
+                // Add scroll listeners
+                addWheelScrollListener('hour-wheel', 'hour-scroll', 12, (index) => {
+                    selectedHour = index + 1;
+                    updateSelectedItem('hour-scroll', index);
+                });
+                
+                addWheelScrollListener('minute-wheel', 'minute-scroll', 60, (index) => {
+                    selectedMinute = index;
+                    updateSelectedItem('minute-scroll', index);
+                });
+                
+                addWheelScrollListener('ampm-wheel', 'ampm-scroll', 2, (index) => {
+                    selectedAMPM = index === 0 ? 'AM' : 'PM';
+                    updateSelectedItem('ampm-scroll', index);
+                });
+            }, 100);
         }
 
         function selectHour(hour) {
@@ -4238,9 +2126,20 @@
 
         function updateWheelPosition(type, index) {
             const scrollElement = document.getElementById(`${type}-scroll`);
-            const itemHeight = window.innerWidth <= 768 ? 35 : 40; // Mobile vs desktop height
-            const offset = -index * itemHeight;
-            scrollElement.style.transform = `translateY(calc(-50% + ${offset}px))`;
+            if (!scrollElement) {
+                console.error('Scroll element not found:', type);
+                return;
+            }
+            
+            const itemHeight = 40; // Fixed height for all items
+            
+            // Simple calculation: move items up by (index * itemHeight)
+            // The padding-top of 80px centers the first item
+            const offset = -(index * itemHeight);
+            
+            console.log(`${type}: index=${index}, offset=${offset}px`);
+            
+            scrollElement.style.transform = `translateY(${offset}px)`;
             updateSelectedItem(`${type}-scroll`, index);
         }
 
@@ -4259,12 +2158,11 @@
         function addWheelScrollListener(wheelId, scrollId, itemCount, onScroll) {
             const wheel = document.getElementById(wheelId);
             const scroll = document.getElementById(scrollId);
-            const itemHeight = window.innerWidth <= 768 ? 35 : 40; // Mobile vs desktop height
+            const itemHeight = 40; // Fixed height
             
             let startY = 0;
-            let currentY = 0;
+            let startTransform = 0;
             let isDragging = false;
-            let currentIndex = 0;
             let velocity = 0;
             let lastY = 0;
             let lastTime = Date.now();
@@ -4275,16 +2173,14 @@
             function startDrag(e) {
                 isDragging = true;
                 startY = e.type === 'mousedown' ? e.clientY : e.touches[0].clientY;
-                currentY = startY;
                 lastY = startY;
                 lastTime = Date.now();
                 velocity = 0;
                 
+                // Get current transform value
                 const transform = scroll.style.transform;
-                const match = transform.match(/translateY\(calc\(-50% \+ (-?\d+)px\)\)/);
-                if (match) {
-                    currentIndex = Math.round(-parseInt(match[1]) / itemHeight);
-                }
+                const match = transform.match(/translateY\((-?\d+(?:\.\d+)?)px\)/);
+                startTransform = match ? parseFloat(match[1]) : 0;
                 
                 document.addEventListener('mousemove', drag);
                 document.addEventListener('touchmove', drag, { passive: false });
@@ -4298,23 +2194,20 @@
                 e.stopPropagation();
                 
                 const y = e.type === 'mousemove' ? e.clientY : e.touches[0].clientY;
-                const deltaY = y - currentY;
-                currentY = y;
+                const deltaY = y - lastY;
                 
                 const now = Date.now();
                 const deltaTime = now - lastTime;
                 if (deltaTime > 0) {
-                    velocity = (y - lastY) / deltaTime;
+                    velocity = deltaY / deltaTime;
                 }
                 lastY = y;
                 lastTime = now;
                 
-                const totalDelta = currentY - startY;
-                const newIndex = Math.round((currentIndex * itemHeight - totalDelta) / itemHeight);
-                const clampedIndex = Math.max(0, Math.min(itemCount - 1, newIndex));
-                
-                const offset = -(clampedIndex * itemHeight) - (totalDelta - (currentIndex * itemHeight - clampedIndex * itemHeight));
-                scroll.style.transform = `translateY(calc(-50% + ${offset}px))`;
+                // Calculate new position
+                const totalDelta = y - startY;
+                const newTransform = startTransform + totalDelta;
+                scroll.style.transform = `translateY(${newTransform}px)`;
             }
             
             function endDrag() {
@@ -4326,9 +2219,13 @@
                 document.removeEventListener('mouseup', endDrag);
                 document.removeEventListener('touchend', endDrag);
                 
-                // Apply momentum
-                const totalDelta = currentY - startY;
-                let newIndex = Math.round((currentIndex * itemHeight - totalDelta - velocity * 100) / itemHeight);
+                // Calculate final position with momentum
+                const currentTransform = startTransform + (lastY - startY);
+                const momentumDelta = velocity * 100;
+                const finalTransform = currentTransform + momentumDelta;
+                
+                // Snap to nearest item
+                let newIndex = Math.round(-finalTransform / itemHeight);
                 newIndex = Math.max(0, Math.min(itemCount - 1, newIndex));
                 
                 updateWheelPosition(scrollId.replace('-scroll', ''), newIndex);
