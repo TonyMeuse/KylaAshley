@@ -1487,6 +1487,7 @@
             // Clear localStorage
             localStorage.removeItem('tripPlannerAuth');
             localStorage.removeItem('tripPlannerUsername');
+            localStorage.removeItem('currentTripId');
             
             closeSettings();
             document.getElementById('main-app').style.display = 'none';
@@ -1616,6 +1617,9 @@
             console.log('Opening trip:', tripId);
             currentTripId = tripId;
             
+            // Save to localStorage so refresh doesn't lose place
+            localStorage.setItem('currentTripId', tripId);
+            
             // Load trip data
             onValue(ref(database, `trips/${tripId}`), (snapshot) => {
                 console.log('Trip data loaded:', snapshot.exists());
@@ -1660,6 +1664,9 @@
             currentTripId = null;
             startDate = null;
             endDate = null;
+            
+            // Clear from localStorage
+            localStorage.removeItem('currentTripId');
         }
 
         function deleteTrip(tripId) {
@@ -1810,6 +1817,7 @@
             
             // If no dates were set, go back to dashboard
             if (!startDate || !endDate) {
+                localStorage.removeItem('currentTripId');
                 backToDashboard();
             } else {
                 // If dates exist, go back to trip view
@@ -2380,6 +2388,7 @@
         window.addEventListener('DOMContentLoaded', function() {
             const isAuthSaved = localStorage.getItem('tripPlannerAuth');
             const savedUsername = localStorage.getItem('tripPlannerUsername');
+            const savedTripId = localStorage.getItem('currentTripId');
             
             if (isAuthSaved === 'true' && savedUsername) {
                 console.log('Auto-login: Checking credentials...');
@@ -2393,17 +2402,27 @@
                             console.log('Auto-login: Success');
                             isAuthenticated = true;
                             document.getElementById('auth-screen').style.display = 'none';
-                            document.getElementById('trips-dashboard').style.display = 'block';
-                            loadTrips();
+                            
+                            // If there was a saved trip, open it
+                            if (savedTripId) {
+                                console.log('Auto-login: Restoring trip:', savedTripId);
+                                openTrip(savedTripId);
+                            } else {
+                                // Otherwise show trips dashboard
+                                document.getElementById('trips-dashboard').style.display = 'block';
+                                loadTrips();
+                            }
                         } else {
                             console.log('Auto-login: Credentials changed, clearing localStorage');
                             localStorage.removeItem('tripPlannerAuth');
                             localStorage.removeItem('tripPlannerUsername');
+                            localStorage.removeItem('currentTripId');
                         }
                     } else {
                         console.log('Auto-login: No credentials found');
                         localStorage.removeItem('tripPlannerAuth');
                         localStorage.removeItem('tripPlannerUsername');
+                        localStorage.removeItem('currentTripId');
                     }
                 }, { onlyOnce: true });
             }
